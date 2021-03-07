@@ -1,5 +1,5 @@
-# Shell Tools
+# Add Or Update
 
-_A collection of shell scripts that are either useful on its own (in interactive sessions), or offer generic functionality for higher-level scripts._
+_Commands that ensure the existence of a text fragment in a file._
 
-Similar to the Shell Basics, these are more elaborate and/or specialized.
+Text fragments can be single lines, or as a specialization `ASSIGNEE=VALUE` lines, or whole blocks of text.
