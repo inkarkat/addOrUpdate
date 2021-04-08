@@ -27,7 +27,7 @@ foo=hi" ]
 @test "identical update skips post line" {
     POSTLINE="# new footer"
     run addOrUpdateLine --line 'foo=new' --post-update "$POSTLINE" --update-match '^foo=b.*' --replacement 'foo=bar' "$FILE"
-    [ $status -eq 0 ]
+    [ $status -eq 1 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
