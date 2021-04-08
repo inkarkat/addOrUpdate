@@ -2,7 +2,7 @@
 
 load temp
 
-@test "update with existing line on the passed line updates that line" {
+@test "update with updated line on the passed line updates that line" {
     run updateLine --update-match "foo=b.*" --replacement '&&' --add-before 2 "$FILE"
     [ $status -eq 0 ]
     [ "$output" = "sing/e=wha\ever
