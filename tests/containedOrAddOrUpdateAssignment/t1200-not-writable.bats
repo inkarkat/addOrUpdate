@@ -7,6 +7,5 @@
     export MEMOIZEDECISION_CHOICE=y
     run containedOrAddOrUpdateAssignment --create-nonexisting --in-place --lhs foo --rhs new "$NONEXISTING"
     [ $status -eq 5 ]
-    [ "${#lines[@]}" -eq 1 ]
     [[ "$output" =~ /doesNotExist/doesNotExistEither:\ No\ such\ file\ or\ directory$ ]]
 }

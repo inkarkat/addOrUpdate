@@ -7,6 +7,5 @@
     export MEMOIZEDECISION_CHOICE=y
     run containedOrAddOrUpdateBlock --create-nonexisting --in-place --marker test --block-text new "$NONEXISTING"
     [ $status -eq 5 ]
-    [ "${#lines[@]}" -eq 1 ]
     [[ "$output" =~ /doesNotExist/doesNotExistEither:\ No\ such\ file\ or\ directory$ ]]
 }
