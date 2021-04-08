@@ -31,7 +31,7 @@ foo=hi' ]
 }
 
 @test "update with pattern containing forward and backslash updates first matching line" {
-    run addOrUpdateLine --line 'foo=/e\' --update-match "^.*/.=.*\\.*" "$FILE"
+    run addOrUpdateLine --line 'foo=/e\' --update-match '^.*/.=.*\\.*' "$FILE"
     [ $status -eq 0 ]
     [ "$output" = 'foo=/e\
 foo=bar
