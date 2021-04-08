@@ -303,7 +303,7 @@ process()
 
 	-e ':slurpToEndAndQuit'
 	-e '$!{ N; b slurpToEndAndQuit }'
-	-e '$q 98'
+	-e '$q 99'
     )
 #dump-args -v 2>&3 "${sedProgram[@]}"
     sed "${sedInplaceArgs[@]}" \
@@ -341,7 +341,7 @@ do
     status=$?
     case $status in
 	0)	[ "$isAll" ] && hadSuccess=t || exit $status;;
-	98|99)	status=1;;
+	99)	status=1;;
 	*)	status=5;;
     esac
 done
