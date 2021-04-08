@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ADDORUPDATELINE_NO_APPEND=t exec addOrUpdateLine "$@"
