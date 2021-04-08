@@ -34,3 +34,17 @@ load temp
     [[ "$output" =~ All\ of\ .*\ do\ not\ yet\ contain\ \'$UPDATE\'\.\ Shall\ I\ update\ them\? ]]
 }
 
+@test "message with replacement" {
+    init
+    UPDATE="foo=new"
+    REPLACEMENT="&oo"
+    export MEMOIZEDECISION_CHOICE=y
+    run containedOrAddOrUpdateLine --in-place --update-match "foo=b" --replacement "$REPLACEMENT" --line "$UPDATE" "$FILE"
+    [ $status -eq 0 ]
+    [[ "$output" =~ does\ not\ yet\ contain\ \'$UPDATE\'\ /\ \'$REPLACEMENT\'\.\ Shall\ I\ update\ it\? ]]
+    [ "$(cat "$FILE")" = "sing/e=wha\\ever
+foo=booar
+foo=hoo bar baz
+# SECTION
+foo=hi" ]
+}
