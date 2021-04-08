@@ -2,7 +2,7 @@
 
 load temp
 
-@test "update all in first file appends to all other files" {
+@test "update all updates all files" {
     UPDATE="foo=new"
     addOrUpdateLine --all --in-place --line "$UPDATE" --update-match "foo=bar" "$FILE" "$FILE2" "$FILE3"
     [ "$(cat "$FILE")" = "sing/e=wha\\ever

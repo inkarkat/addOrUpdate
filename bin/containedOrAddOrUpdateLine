@@ -4,7 +4,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-g|--memoize-group GROUP] [--name NAME] [-N|--needs-update-message MSG] [-M|--up-to-date-message MSG] [-i[SUFFIX]|--in-place[=SUFFIX]] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before|--add-after ADDRESS] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-g|--memoize-group GROUP] [--name NAME] [-N|--needs-update-message MSG] [-M|--up-to-date-message MSG] [-i[SUFFIX]|--in-place[=SUFFIX]] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before|--add-after ADDRESS] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -64,6 +64,7 @@ unset needsUpdateMessage
 unset upToDateMessage
 isAll=
 line=
+replacement=
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -76,9 +77,10 @@ do
 	--test-only|-t)		    shift; isTestOnly=t;;
 	--all)			    addOrUpdateLineArgs+=("$1"); shift; isAll=t;;
 	--line|-l)		    addOrUpdateLineArgs+=("$1" "$2"); line="$2"; shift; shift;;
+	--replacement|-r)	    addOrUpdateLineArgs+=("$1" "$2"); replacement="$2"; shift; shift;;
 	--ignore-nonexisting|--create-nonexisting)
 				    addOrUpdateLineArgs+=("$1"); shift;;
-	--accept-match|-a|--update-match|-u|--replacement|-r|--pre-line|--post-line|--pre-update|--post-update|--add-before|--add-after)
+	--accept-match|-a|--update-match|-u|--pre-line|--post-line|--pre-update|--post-update|--add-before|--add-after)
 				    addOrUpdateLineArgs+=("$1" "$2"); shift; shift;;
 	--)			    addOrUpdateLineArgs+=("$1"); shift; break;;
 	-)			    break;;
@@ -99,6 +101,8 @@ if [ $# -eq 0 -o "$1" = '-' ]; then # Note: This doesn't handle a later - argume
     set -- "$TMPFILE"	# Note: We trust that the user didn't erroneously passed --in-place. Normally, sed would complain ("no input files" or "can't read -: No such file or directory", but as we convert into a temporary file, this doesn't happen now.
 fi
 
+lineReplacement=${line:+\'}${line}${line:+\'}
+[ -n "$replacement" ] && lineReplacement="${lineReplacement}${lineReplacement:+ / }'${replacement}'"
 verb="does not"
 negativeVerb="contains"
 action="update it"
@@ -121,7 +125,7 @@ addOrUpdateLine --test-only "${addOrUpdateLineArgs[@]}" "$@"
 case $? in
     0)	if [ "$isTestOnly" ]; then
 	    if [ -z "${needsUpdateMessage+t}" ]; then
-		printf >&2 "%s %s contain '%s'; update required.\\n" "${name:-$subject}" "$verb" "$line"
+		printf >&2 "%s %s contain %s; update required.\\n" "${name:-$subject}" "$verb" "$lineReplacement"
 	    elif [ -n "$needsUpdateMessage" ]; then
 		printf >&2 "%s\n" "$needsUpdateMessage"
 	    fi
@@ -129,7 +133,7 @@ case $? in
 	fi
 	;;
     1)	if [ -z "${upToDateMessage+t}" ]; then
-	    printf >&2 "%s already %s '%s'; no update necessary.\\n" "${name:-$subject}" "$negativeVerb" "$line"
+	    printf >&2 "%s already %s %s; no update necessary.\\n" "${name:-$subject}" "$negativeVerb" "$lineReplacement"
 	elif [ -n "$upToDateMessage" ]; then
 	    printf >&2 "%s\n" "$upToDateMessage"
 	fi
@@ -140,7 +144,7 @@ esac
 
 
 [ "$memoizeDecisionArgs" ] || memoizeDecisionArgs=(--memoize-group "$(basename -- "$0").$PPID")
-memoizeDecision "${memoizeDecisionArgs[@]}" --subject "${name:-$subject}" --verb "$verb" --state "yet contain '$line'" --action "$action"
+memoizeDecision "${memoizeDecisionArgs[@]}" --subject "${name:-$subject}" --verb "$verb" --state "yet contain $lineReplacement" --action "$action"
 status=$?
 case $status in
     0)	exec addOrUpdateLine "${addOrUpdateLineInplaceArg[@]}" "${addOrUpdateLineArgs[@]}" "$@";;

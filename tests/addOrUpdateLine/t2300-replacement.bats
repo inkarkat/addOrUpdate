@@ -69,9 +69,9 @@ foo=hi' ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
-@test "update with line where REPLACEMENT updates the line to the original content still indicates modification" {
+@test "update with line where REPLACEMENT updates the line to the original content indicates no change" {
     run addOrUpdateLine --line "foo=new" --update-match '^foo=h.*$' --replacement "foo=hoo bar baz" "$FILE"
 
-    [ $status -eq 0 ]	# 1 (no modifications were made) would be more correct.
+    [ $status -eq 1 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }

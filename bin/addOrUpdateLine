@@ -74,11 +74,7 @@ HELPDESCRIPTION
     --replacement|-r REPLACEMENT
 			    Replace with REPLACEMENT instead of the literal LINE
 			    when a matching one has been found. This allows the
-			    use of references like \1 and &. Note that the exit
-			    status ignores REPLACEMENT and only considers
-			    whether LINE already existed; so when LINE is
-			    different but REPLACEMENT changes it back to the
-			    original line this is treated as a modification.
+			    use of references like \1 and &.
     --pre-line PRETEXT	    When a fresh LINE is added, put PRETEXT before it.
 			    This does not apply to the update of existing lines.
 			    (This is assumed to be for comments or headers that
@@ -147,8 +143,18 @@ do
 	*)		    break;;
     esac
 done
-if [ -z "$line" ]; then
+if [ ! "$ADDORUPDATELINE_NO_APPEND" ] && [ -z "$line" ]; then
     echo 'ERROR: No LINE passed.'
+    echo
+    printUsage "$0"
+    exit 2
+elif [ "$ADDORUPDATELINE_NO_APPEND" ] && [ -z "$updateMatch" ]; then
+    echo 'ERROR: No --update-match PATTERN passed.'
+    echo
+    printUsage "$0"
+    exit 2
+elif [ "$ADDORUPDATELINE_NO_APPEND" ] && [ -z "${replacement+t}" ]; then
+    echo 'ERROR: No --replacement REPLACEMENT passed.'
     echo
     printUsage "$0"
     exit 2
@@ -157,7 +163,7 @@ elif [ ${#sedInplaceArgs[@]} -gt 0 -a -n "$isTestOnly" ]; then
     echo
     printUsage "$0"
     exit 2
-elif [ -n "$isIgnoreNonexisting" -a -n "$isCreateNonexisting" ]; then
+elif [ "$isIgnoreNonexisting" ] && [ "$isCreateNonexisting" ]; then
     echo 'ERROR: Cannot combine --ignore-nonexisting and --create-nonexisting.'
     echo
     printUsage "$0"
@@ -167,11 +173,20 @@ elif [ -n "$addBeforeAddress" -a -n "$addAfterAddress" ]; then
     echo
     printUsage "$0"
     exit 2
+elif [ "$ADDORUPDATELINE_NO_APPEND" ] && [ "$isCreateNonexisting" ]; then
+    echo 'ERROR: Cannot use --create-nonexisting when appending is not allowed.'
+    echo
+    printUsage "$0"
+    exit 2
 fi >&2
 
 insertableLine="${line//\\/\\\\}"
 insertableLine="${insertableLine//${NL}/\\${NL}}"
-literalLinePattern="^$(printf %s "$line" | literalPattern)\$"
+if [ "$ADDORUPDATELINE_NO_APPEND" ]; then
+    literalLinePattern='\n'  # Never matches in a line.
+else
+    literalLinePattern="^$(printf %s "$line" | literalPattern)\$"
+fi
 [ "$updateMatch" ] || updateMatch="$literalLinePattern"
 
 [ $# -eq 0 ] && set -- -    # Read from stdin if no FILE is passed.
@@ -197,7 +212,7 @@ create()
 }
 process()
 {
-    local isAppend="$1"; shift
+    local isAppend="$1"; shift; [ "$ADDORUPDATELINE_NO_APPEND" ] && isAppend=
     local filespec="$1"; shift
 
     typeset -a sedProgram=()
@@ -226,6 +241,10 @@ process()
 	    # Do the update with REPLACEMENT.
 	    -e "/${updateMatch//\//\\/}/{ /${literalLinePattern//\//\\/}/! {"
 	    -e "s/${updateMatch//\//\\/}/${replacement//\//\\/}/"
+	    # When the REPLACEMENT is identical to the original line, skip the
+	    # pre-/post-line updates and indicate no change by putting a newline
+	    # into the hold space, just like ACCEPT-PATTERN.
+	    -e 'G; /^\(.*\)\n\1$/{ s/\n[^\n]*$//; x; s/.*/\n/; x; b last; }; s/\n[^\n]*$//;'
 	)
 	if [ -n "${updatePreLines+t}" ]; then
 	    sedProgram+=(
@@ -286,7 +305,7 @@ process()
     else
 	sedProgram+=(
 	    # Indicate no update via special exit status.
-	    -e '$q 99'
+	    -e "${addBeforeAddress:-${addAfterAddress:-\$}}b slurpToEndAndQuit"
 	)
     fi
 
@@ -299,7 +318,7 @@ process()
 
 	-e ':slurpToEndAndQuit'
 	-e '$!{ N; b slurpToEndAndQuit }'
-	-e '$q 98'
+	-e '$q 99'
     )
 #dump-args -v 2>&3 "${sedProgram[@]}"
     sed "${sedInplaceArgs[@]}" \
@@ -337,7 +356,7 @@ do
     status=$?
     case $status in
 	0)	[ "$isAll" ] && hadSuccess=t || exit $status;;
-	98|99)	status=1;;
+	99)	status=1;;
 	*)	status=5;;
     esac
 done

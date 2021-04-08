@@ -2,16 +2,15 @@
 
 load temp
 
-@test "update with nonmatching pattern appends at the end" {
+@test "update with nonmatching pattern returns 1" {
     UPDATE="foo=new"
-    run addOrUpdateLine --line "$UPDATE" --update-match "foosball=never" "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
-$UPDATE" ]
+    run updateLine --update-match "foosball=never" --replacement new "$FILE"
+    [ $status -eq 1 ]
+    [ "$output" = "$(cat "$INPUT")" ]
 }
 
 @test "update with literal-like pattern updates first matching line" {
-    run addOrUpdateLine --line "foo=new" --update-match "foo=h" "$FILE"
+    run updateLine --update-match "foo=h.*" --replacement "foo=new" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = 'sing/e=wha\ever
 foo=bar
@@ -21,7 +20,7 @@ foo=hi' ]
 }
 
 @test "update with anchored pattern updates first matching line" {
-    run addOrUpdateLine --line "foo=new" --update-match "^fo\+=[ghi].*$" "$FILE"
+    run updateLine --update-match "^fo\+=[ghi].*$" --replacement "foo=new" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = 'sing/e=wha\ever
 foo=bar
@@ -31,7 +30,7 @@ foo=hi' ]
 }
 
 @test "update with pattern containing forward and backslash updates first matching line" {
-    run addOrUpdateLine --line 'foo=/e\' --update-match '^.*/.=.*\\.*' "$FILE"
+    run updateLine --update-match '^.*/.=.*\\.*' --replacement 'foo=/e\\' "$FILE"
     [ $status -eq 0 ]
     [ "$output" = 'foo=/e\
 foo=bar

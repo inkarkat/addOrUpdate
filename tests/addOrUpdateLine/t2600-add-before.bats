@@ -44,7 +44,7 @@ foo=hi" ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
-@test "update with existing line one before the passed line keeps contents and returns 1" {
+@test "update with existing line one after the passed line appends early and ignores the existing later line" {
     run addOrUpdateLine --line "foo=bar" --add-before 1 "$FILE"
     [ $status -eq 0 ]
     [ "$output" = "foo=bar
