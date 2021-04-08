@@ -290,7 +290,7 @@ process()
     else
 	sedProgram+=(
 	    # Indicate no update via special exit status.
-	    -e '$q 99'
+	    -e "${addBeforeAddress:-${addAfterAddress:-\$}}b slurpToEndAndQuit"
 	)
     fi
 
