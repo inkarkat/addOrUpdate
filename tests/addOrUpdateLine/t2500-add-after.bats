@@ -38,7 +38,17 @@ foo=hoo bar baz
 foo=hi" ]
 }
 
-@test "update with existing line after the passed line keeps contents and returns 1" {
+@test "update with existing line after the passed line appends early and ignores the existing later line" {
+    run addOrUpdateLine --line "foo=hoo bar baz" --add-after 1 "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = "sing/e=wha\ever
+foo=hoo bar baz
+foo=bar
+foo=hoo bar baz
+# SECTION
+foo=hi" ]
+}
+@test "update with existing line before the passed line keeps contents and returns 1" {
     run addOrUpdateLine --line "foo=bar" --add-after 3 "$FILE"
     [ $status -eq 1 ]
     [ "$output" = "$(cat "$INPUT")" ]
