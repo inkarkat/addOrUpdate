@@ -226,6 +226,7 @@ process()
 	    # Do the update with REPLACEMENT.
 	    -e "/${updateMatch//\//\\/}/{ /${literalLinePattern//\//\\/}/! {"
 	    -e "s/${updateMatch//\//\\/}/${replacement//\//\\/}/"
+	    -e 'G; /^\(.*\)\n\1$/{ s/\n[^\n]*$//; b last; }; s/\n[^\n]*$//;'
 	)
 	if [ -n "${updatePreLines+t}" ]; then
 	    sedProgram+=(
