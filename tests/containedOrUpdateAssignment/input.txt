@@ -1,0 +1,5 @@
+sing/e=wha\ever
+foo=bar
+foo=hoo bar baz
+# SECTION
+fox=hi

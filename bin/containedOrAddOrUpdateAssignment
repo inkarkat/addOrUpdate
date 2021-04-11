@@ -2,7 +2,7 @@
 
 typeset -a usageOverrideArgs=(
     -e '/^ *--line|-l\|--update-match|-u\|--replacement|-r/b removeOptionLoop'
-    -e '/^Usage:$/N' -e "/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?containedOrAddOrUpdateLine /\1\2$(basename "$0") -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line LINE \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\]// }"
+    -e '/^Usage:$/N' -e "/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?containedOrAddOrUpdateLine /\1\2$(basename "$0") -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\]// }"
 )
 printUsage()
 {
@@ -50,4 +50,12 @@ elif [ -z "$lhs" ]; then
 fi >&2
 
 literalLhs="$(printf %s "$lhs" | sed -e 's/[][\$*.^]/\\&/g')"
-exec containedOrAddOrUpdateLine --line "${lhs}=${rhs}" --update-match "^${literalLhs}=" "${addOrUpdateLineArgs[@]}" "$@"
+if [ "$ADDORUPDATELINE_NO_APPEND" ]; then
+    literalReplacement="${lhs}=${rhs}"
+    literalReplacement="${literalReplacement//\\/\\\\}"
+    literalReplacement="${literalReplacement//&/\\&}"
+    literalReplacement="${literalReplacement//$'\n'/\\n}"
+    exec containedOrAddOrUpdateLine --update-match "^${literalLhs}=.*" --replacement "$literalReplacement" "${addOrUpdateLineArgs[@]}" "$@"
+else
+    exec containedOrAddOrUpdateLine --line "${lhs}=${rhs}" --update-match "^${literalLhs}=" "${addOrUpdateLineArgs[@]}" "$@"
+fi
