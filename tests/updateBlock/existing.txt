@@ -1,0 +1,21 @@
+first line
+second line
+third line
+# BEGIN test
+The original comment
+is this one.
+# END test
+# BEGIN subsequent
+Single line
+# END subsequent
+
+middle line
+
+# BEGIN test
+Testing again
+Somehoe
+# END test
+
+# BEGIN final and empty
+# END final and empty
+last line

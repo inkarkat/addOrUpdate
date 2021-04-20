@@ -1,0 +1,9 @@
+first
+# BEGIN test
+//BEGIN test
+The same stuff
+here again.
+# END test
+//END test
+BEGIN test
+END test

@@ -1,0 +1,6 @@
+// From here
+# BEGIN test
+The same stuff
+// To there
+here again.
+# END test

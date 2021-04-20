@@ -1,0 +1,8 @@
+one
+two
+# BEGIN repeated
+hello
+# END repeated
+good morning
+# END repeated
+last

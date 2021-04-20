@@ -173,6 +173,11 @@ elif [ -n "$isIgnoreNonexisting" -a -n "$isCreateNonexisting" ]; then
     echo
     printUsage "$0"
     exit 2
+elif [ "$ADDORUPDATEBLOCK_NO_APPEND" ] && [ "$isCreateNonexisting" ]; then
+    echo 'ERROR: Cannot use --create-nonexisting when appending is not allowed.'
+    echo
+    printUsage "$0"
+    exit 2
 fi >&2
 
 literalBeginMarkerPattern="$(printf %s "$beginMarker" | literalPattern)"
@@ -203,7 +208,7 @@ create()
 }
 process()
 {
-    local isAppend="$1"; shift
+    local isAppend="$1"; shift; [ "$ADDORUPDATEBLOCK_NO_APPEND" ] && isAppend=
     local filespec="$1"; shift
 
     typeset -a sedProgram=()

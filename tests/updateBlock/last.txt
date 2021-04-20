@@ -1,0 +1,9 @@
+one
+# BEGIN test
+Final testing
+# END test
+middle
+# BEGIN subsequent
+Single line
+# END subsequent
+end
