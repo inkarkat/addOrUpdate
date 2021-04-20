@@ -5,8 +5,8 @@ printUsage()
     containedOrAddOrUpdateAssignment --help 2>&1 | sed \
 	-e '1s#^.*$#If an assignment in the form ASSIGNEE=... does not exist in at least one (all with --all) of the passed FILE(s), asks the user whether to update it so that VALUE gets assigned (in the first file to match, and only the first such matching assignment there).#' \
 	-e '2b removeFirstParagraphLoop' \
-	-e '/^Usage:$/N' -e "/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?containedOrAddOrUpdateAssignment /\1\2$(basename "$1") /; "'s/|--create-nonexisting//; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
-	-e '/^Example:$/N' -e "/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?containedOrAddOrUpdateAssignment .*/\1\2$(basename "$1") -l 'export FOO' -r quux .bashrc/; }" \
+	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?containedOrAddOrUpdateAssignment /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting//; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
+	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?containedOrAddOrUpdateAssignment .*/\1\2'"$(basename "$1") -l 'export FOO' -r quux .bashrc/; }" \
 	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }'
 }
 case "$1" in
