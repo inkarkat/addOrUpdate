@@ -1,0 +1,4 @@
+# BEGIN test
+The same stuff
+here again.
+# END test
