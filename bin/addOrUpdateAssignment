@@ -2,7 +2,7 @@
 
 typeset -a usageOverrideArgs=(
     -e '/^ *\(--line|-l\|--update-match|-u\|--replacement|-r\)/b removeOptionLoop'
-    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?addOrUpdateLine /\1\2'"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] // }'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateLine /\1\2'"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] // }'
 )
 printUsage()
 {

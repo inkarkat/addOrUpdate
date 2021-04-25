@@ -6,7 +6,7 @@ printUsage()
 	-e '1s#^.*$#Updates a sequence of lines that starts with BEGIN-LINE and ends with END-LINE (once, in the first file to match, or in all with --all (but still just the first such matching block in each)) in the passed FILE(s) with BLOCK contents.#' \
 	-e '2b removeFirstParagraphLoop' \
 	-e '/^ *\(--create-nonexisting\|--pre-line\|--post-line\)/b removeOptionLoop' \
-	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?addOrUpdateBlock /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting//; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
+	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateBlock /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting//; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
 	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateBlock /\1\2'"$(basename "$1") / }" \
 	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
 	-e b -e :removeOptionLoop -e '{ /\n *\(--create-nonexisting\|--pre-line\|--post-line\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^ ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
