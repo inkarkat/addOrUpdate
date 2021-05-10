@@ -2,9 +2,18 @@
 
 load temp
 
-@test "exit status 1 and no error message when no LINE passed" {
-    run updateLine --update-match old --replacement new "$FILE"
-    [ $status -eq 1 ]
+@test "error when no PATTERN passed" {
+    run updateLine --replacement new "$FILE"
+    [ $status -eq 2 ]
+    [ "${lines[0]}" = "ERROR: No --update-match PATTERN passed." ]
+    [ "${lines[1]%% *}" = "Usage:" ]
+}
+
+@test "error when no REPLACEMENT passed" {
+    run updateLine --update-match old "$FILE"
+    [ $status -eq 2 ]
+    [ "${lines[0]}" = "ERROR: No --replacement REPLACEMENT passed." ]
+    [ "${lines[1]%% *}" = "Usage:" ]
 }
 
 @test "error when combining --in-place and --test-only" {
