@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export PATCH="${BATS_TEST_DIRNAME}/diff.patch"
+export EXISTING="${BATS_TEST_DIRNAME}/existing.txt"
+export FILE="${BATS_TMPDIR}/existing.txt"
+
+setup()
+{
+    cp -f "$EXISTING" "$FILE"
+}

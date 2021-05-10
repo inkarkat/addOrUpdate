@@ -1,0 +1,75 @@
+#!/bin/bash
+
+printShortUsage()
+{
+    # Note: short followed by long option; if the user knows the short one, she can
+    # skim the long one.
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--ignore-nonexisting] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
+}
+printUsage()
+{
+    # This is the short help when launched with no or incorrect arguments.
+    # It is printed to stderr to avoid accidental processing.
+    printShortUsage "$1" >&2
+    printf >&2 '\nTry %q --help for more information.\n' "$(basename "$1")"
+}
+printLongUsage()
+{
+    # This is the long "man page" when launched with the help argument.
+    # It is printed to stdout to allow paging with 'more'.
+    cat <<HELPDESCRIPTION
+Updates file(s) through PATCH(es).
+HELPDESCRIPTION
+    echo
+    printShortUsage "$1"
+    echo
+    cat <<HELPTEXT
+    --in-place[=SUFFIX]|-i[SUFFIX]
+			    Edit file(s) in place (makes backup if SUFFIX
+			    supplied) instead of printing to standard output.
+    --test-only|-t	    Just check whether an update would be made. Does not
+			    modify or create non-existing file(s), or output the
+			    result.
+    --ignore-nonexisting    Succeed instead of complaining if (none of the)
+			    file(s) does not exist yet.
+EXIT STATUS:
+    0	An update has happened
+    1	The file(s) already existed, no modifications were made.
+    2	Bad invocation, wrong or missing command-line arguments.
+    3	Internal error or failed assertion.
+    4	None of the passed file(s) exist; no modifications could be made.
+    5	A file could not be created / modified (due to problems with patch).
+    6	The PATCH cannot be read.
+
+Example:
+HELPTEXT
+    printf '%q %s\n' "$(basename "$1")" '--foo bar /tmp/foobar'
+}
+
+isTestOnly=
+typeset -a sedInplaceArgs=()
+while [ $# -ne 0 ]
+do
+    case "$1" in
+	--help|-h|-\?)	    shift; printLongUsage "$0"; exit 0;;
+	--in-place|--inplace=*|-i*)
+			    sedInplaceArgs+=("$1"); shift;;
+	--test-only|-t)	    shift; isTestOnly=t;;
+	--)		    shift; break;;
+	-*)		    { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
+	*)		    break;;
+    esac
+done
+
+if [ $# -eq 0 ]; then
+    echo 'ERROR: No PATCH passed.'
+    echo
+    printUsage "$0"
+    exit 2
+elif [ ${#sedInplaceArgs[@]} -gt 0 -a -n "$isTestOnly" ]; then
+    echo 'ERROR: Cannot combine --in-place and --test-only.'
+    echo
+    printUsage "$0"
+    exit 2
+fi >&2
+
