@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export PATCH="${BATS_TEST_DIRNAME}/diff.patch"
+export SECOND_PATCH="${BATS_TEST_DIRNAME}/second.patch"
 export ALTERNATIVE_PATCH="${BATS_TEST_DIRNAME}/alternative.patch"
 export REVERTED_PATCH="${BATS_TEST_DIRNAME}/reverted.patch"
 export UNAPPLICABLE_PATCH="${BATS_TEST_DIRNAME}/unapplicable.patch"

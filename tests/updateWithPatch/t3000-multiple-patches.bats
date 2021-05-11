@@ -24,6 +24,74 @@ $(cat "$ALTERNATIVE_RESULT")" ]
     cmp "$EXISTING" "$FILE"
 }
 
+@test "patching with two serial patches prints both results and keeps the original intact" {
+    run updateWithPatch "$PATCH" "$SECOND_PATCH"
+    [ $status -eq 0 ]
+    [ "$output" = "$(cat "$RESULT")
+prepended first line
+first line
+second line
+third line
+second-to-last line
+last line
+appended last line" ]
+    cmp "$EXISTING" "$FILE"
+}
+
+@test "in-place patching with two serial patches applies both" {
+    run updateWithPatch --in-place "$PATCH" "$SECOND_PATCH"
+    [ $status -eq 0 ]
+    [ "$output" = "" ]
+    [ "$(cat "$FILE")" = "prepended first line
+new first line
+first line
+augmented second line
+third line
+last line
+appended last line" ]
+}
+
+@test "test-only patching with two serial patches succeeds" {
+    run updateWithPatch --test-only "$PATCH" "$SECOND_PATCH"
+    [ $status -eq 0 ]
+    [ "$output" = "" ]
+    cmp "$EXISTING" "$FILE"
+}
+
+@test "patching with two swapped serial patches prints both results and keeps the original intact" {
+    run updateWithPatch "$SECOND_PATCH" "$PATCH"
+    [ $status -eq 0 ]
+    [ "$output" = "prepended first line
+first line
+second line
+third line
+second-to-last line
+last line
+appended last line
+$(cat "$RESULT")" ]
+    cmp "$EXISTING" "$FILE"
+}
+
+@test "in-place patching with two swapped serial patches applies both" {
+    run updateWithPatch --in-place "$SECOND_PATCH" "$PATCH"
+    [ $status -eq 0 ]
+    [ "$output" = "" ]
+    [ "$(cat "$FILE")" = "prepended first line
+new first line
+first line
+augmented second line
+third line
+last line
+appended last line" ]
+}
+
+@test "test-only patching with two swapped serial patches succeeds" {
+    run updateWithPatch --test-only "$SECOND_PATCH" "$PATCH"
+    [ $status -eq 0 ]
+    [ "$output" = "" ]
+    cmp "$EXISTING" "$FILE"
+}
+
 @test "swapped in-place patching with two alternatives applies the first and fails the second" {
     run updateWithPatch --in-place "$ALTERNATIVE_PATCH" "$PATCH"
     [ $status -eq 0 ]
