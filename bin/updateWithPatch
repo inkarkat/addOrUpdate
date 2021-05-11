@@ -40,9 +40,8 @@ EXIT STATUS:
     1	The file(s) already existed, no modifications were made.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
-    4	None of the passed file(s) exist; no modifications could be made.
-    5	A file could not be created / modified (due to problems with patch).
-    6	A PATCH cannot be read.
+    4	None (with --all: at least one) of the passed PATCH(es) could not be applied.
+    5	A PATCH cannot be read.
 
 Example:
 HELPTEXT
@@ -78,3 +77,20 @@ elif [ ${#sedInplaceArgs[@]} -gt 0 -a -n "$isTestOnly" ]; then
     exit 2
 fi >&2
 
+status=
+for patchFilespec
+do
+    if { patch --forward --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
+	: ${status:=0}
+    else
+	if [ ! -e "$patchFilespec" ]; then
+	    printf >&2 'ERROR: Patch does not exist: %s\n' "$patchFilespec"
+	    status=5
+	elif [ ${status:-4} -le 1 ] && { patch --reverse --dry-run --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
+	    status=1
+	elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
+	    status=4
+	fi
+    fi
+done
+exit ${status:-4}

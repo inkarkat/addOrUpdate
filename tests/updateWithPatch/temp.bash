@@ -7,4 +7,5 @@ export FILE="${BATS_TMPDIR}/existing.txt"
 setup()
 {
     cp -f "$EXISTING" "$FILE"
+    cd "$BATS_TMPDIR"
 }
