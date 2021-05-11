@@ -83,7 +83,7 @@ fi >&2
 doPatch()
 {
     local patchFilespec="${1:?}"; shift
-    { cat -- "$patchFilespec" || return 5; } | patch --silent "${patchInplaceArgs[@]}" "$@"
+    { cat -- "$patchFilespec" || return 5; } | patch --batch --silent "${patchInplaceArgs[@]}" "$@"
 }
 
 status=
