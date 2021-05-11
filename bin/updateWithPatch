@@ -50,13 +50,15 @@ HELPTEXT
 
 isTestOnly=
 isAll=
-typeset -a sedInplaceArgs=()
+isInplace=
+typeset -a patchInplaceArgs=(--output=-)
 while [ $# -ne 0 ]
 do
     case "$1" in
 	--help|-h|-\?)	    shift; printLongUsage "$0"; exit 0;;
-	--in-place|--inplace=*|-i*)
-			    sedInplaceArgs+=("$1"); shift;;
+	--in-place)	    shift; isInplace=t; patchInplaceArgs=();;
+	--inplace=*)	    isInplace=t; patchInplaceArgs=(--backup --prefix="${1#--inplace=}"); shift;;
+	-i*)		    isInplace=t; patchInplaceArgs=(--backup --prefix="${1#-i}"); shift;;
 	--test-only|-t)	    shift; isTestOnly=t;;
 	--all)		    shift; isAll=t;;
 	--)		    shift; break;;
@@ -70,7 +72,7 @@ if [ $# -eq 0 ]; then
     echo
     printUsage "$0"
     exit 2
-elif [ ${#sedInplaceArgs[@]} -gt 0 -a -n "$isTestOnly" ]; then
+elif [ "$isInplace" ] && [ "$isTestOnly" ]; then
     echo 'ERROR: Cannot combine --in-place and --test-only.'
     echo
     printUsage "$0"
@@ -80,13 +82,13 @@ fi >&2
 status=
 for patchFilespec
 do
-    if { patch --forward --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
+    if { patch "${patchInplaceArgs[@]}" --forward --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
 	: ${status:=0}
     else
 	if [ ! -e "$patchFilespec" ]; then
 	    printf >&2 'ERROR: Patch does not exist: %s\n' "$patchFilespec"
 	    status=5
-	elif [ ${status:-4} -le 1 ] && { patch --reverse --dry-run --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
+	elif [ ${status:-4} -le 1 ] && { patch "${patchInplaceArgs[@]}" --reverse --dry-run --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
 	    status=1
 	elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
 	    status=4
