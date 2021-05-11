@@ -6,7 +6,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -32,9 +32,11 @@ HELPDESCRIPTION
     --test-only|-t	    Just check whether an update would be made. Does not
 			    modify or create non-existing file(s), or output the
 			    result.
-    --all		    Instead of stopping after the first PATCH that is
-			    accepted, make sure that each PATCH actually
-			    applies.
+    --first		    Stop processing PATCH(es) after the first PATCH is
+			    accepted.
+    --all		    Ensure that each PATCH actually applies, instead of
+			    tolerating failures to apply PATCH(es) as long as at
+			    least one applies.
 EXIT STATUS:
     0	An update has happened
     1	The file(s) already existed, no modifications were made.
@@ -50,6 +52,7 @@ HELPTEXT
 }
 
 isTestOnly=
+isFirst=
 isAll=
 isInplace=
 typeset -a patchArgs=()
@@ -66,6 +69,7 @@ do
 	--inplace=*)	    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#--inplace=}"); shift;;
 	-i*)		    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#-i}"); shift;;
 	--test-only|-t)	    shift; isTestOnly=t; patchInplaceArgs=();;
+	--first)	    shift; isFirst=t;;
 	--all)		    shift; isAll=t;;
 
 	-+([ceElnTuZ]))	    patchArgs+=("$1"); shift;;
@@ -103,6 +107,11 @@ elif [ "$isInplace" ] && [ "$isTestOnly" ]; then
     echo
     printUsage "$0"
     exit 2
+elif [ "$isFirst" ] && [ "$isAll" ]; then
+    echo 'ERROR: Cannot combine --first and --all.'
+    echo
+    printUsage "$0"
+    exit 2
 fi >&2
 
 doPatch()
@@ -118,7 +127,9 @@ for patchFilespec
 do
     doPatch "${patchDirectionArgs[@]}" --input "$patchFilespec"
     case $? in
-	0)  : ${status:=0};;
+	0)  : ${status:=0}
+	    [ "$isFirst" ] && break
+	    ;;
 	1)  if [ ${status:-4} -le 1 ] && doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
 		status=1
 	    elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then

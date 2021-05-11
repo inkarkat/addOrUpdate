@@ -15,3 +15,10 @@ load temp
     [ "${lines[0]}" = "ERROR: Cannot combine --in-place and --test-only." ]
     [ "${lines[1]%% *}" = "Usage:" ]
 }
+
+@test "error when combining --first and --all" {
+    run updateWithPatch --first --all "$PATCH"
+    [ $status -eq 2 ]
+    [ "${lines[0]}" = "ERROR: Cannot combine --first and --all." ]
+    [ "${lines[1]%% *}" = "Usage:" ]
+}
