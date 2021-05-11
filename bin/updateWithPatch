@@ -82,13 +82,13 @@ fi >&2
 status=
 for patchFilespec
 do
-    if { patch "${patchInplaceArgs[@]}" --forward --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
+    if { patch --silent "${patchInplaceArgs[@]}" --forward --read-only=fail --reject-file=- < "$patchFilespec"; } 2>/dev/null; then
 	: ${status:=0}
     else
 	if [ ! -e "$patchFilespec" ]; then
 	    printf >&2 'ERROR: Patch does not exist: %s\n' "$patchFilespec"
 	    status=5
-	elif [ ${status:-4} -le 1 ] && { patch "${patchInplaceArgs[@]}" --reverse --dry-run --read-only=fail --reject-file=- < "$patchFilespec"; } >/dev/null 2>&1; then
+	elif [ ${status:-4} -le 1 ] && { patch --silent "${patchInplaceArgs[@]}" --reverse --dry-run --read-only=fail --reject-file=- < "$patchFilespec"; } 2>/dev/null; then
 	    status=1
 	elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
 	    status=4
