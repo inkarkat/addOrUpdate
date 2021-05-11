@@ -4,7 +4,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--ignore-nonexisting] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -30,6 +30,9 @@ HELPDESCRIPTION
     --test-only|-t	    Just check whether an update would be made. Does not
 			    modify or create non-existing file(s), or output the
 			    result.
+    --all		    Instead of stopping after the first PATCH that is
+			    accepted, make sure that each PATCH actually
+			    applies.
     --ignore-nonexisting    Succeed instead of complaining if (none of the)
 			    file(s) does not exist yet.
 EXIT STATUS:
@@ -39,7 +42,7 @@ EXIT STATUS:
     3	Internal error or failed assertion.
     4	None of the passed file(s) exist; no modifications could be made.
     5	A file could not be created / modified (due to problems with patch).
-    6	The PATCH cannot be read.
+    6	A PATCH cannot be read.
 
 Example:
 HELPTEXT
@@ -47,6 +50,7 @@ HELPTEXT
 }
 
 isTestOnly=
+isAll=
 typeset -a sedInplaceArgs=()
 while [ $# -ne 0 ]
 do
@@ -55,6 +59,7 @@ do
 	--in-place|--inplace=*|-i*)
 			    sedInplaceArgs+=("$1"); shift;;
 	--test-only|-t)	    shift; isTestOnly=t;;
+	--all)		    shift; isAll=t;;
 	--)		    shift; break;;
 	-*)		    { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
 	*)		    break;;
