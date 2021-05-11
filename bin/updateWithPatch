@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o pipefail
 
 printShortUsage()
 {
@@ -82,23 +83,23 @@ fi >&2
 doPatch()
 {
     local patchFilespec="${1:?}"; shift
-    { patch --silent "${patchInplaceArgs[@]}" "$@" < "$patchFilespec"; } 2>/dev/null
+    { cat -- "$patchFilespec" || return 5; } | patch --silent "${patchInplaceArgs[@]}" "$@"
 }
 
 status=
 for patchFilespec
 do
-    if doPatch "$patchFilespec" --forward --read-only=fail --reject-file=-; then
-	: ${status:=0}
-    else
-	if [ ! -e "$patchFilespec" ]; then
-	    printf >&2 'ERROR: Patch does not exist: %s\n' "$patchFilespec"
-	    status=5
-	elif [ ${status:-4} -le 1 ] && doPatch "$patchFilespec" --reverse --dry-run --read-only=fail --reject-file=-; then
-	    status=1
-	elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
-	    status=4
-	fi
-    fi
+    doPatch "$patchFilespec" --forward --read-only=fail --reject-file=-
+    case $? in
+	0)  : ${status:=0};;
+	1)  if [ ${status:-4} -le 1 ] && doPatch "$patchFilespec" --reverse --dry-run --read-only=fail --reject-file=-; then
+		status=1
+	    elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
+		status=4
+	    fi
+	    ;;
+	5)  status=5;;
+	*)  status=3;;
+    esac
 done
 exit ${status:-4}
