@@ -109,6 +109,9 @@ doPatch()
     patch --batch --silent ${isTestOnly:+--dry-run} "${patchInplaceArgs[@]}" "${patchReadOnlyArgs[@]}" "${patchRejectFileArgs[@]}" "$@"
 }
 
+case ",${DEBUG:-}," in *,updateWithPatch,*) set -x;; esac
+case ",${DEBUG:-}," in *,updateWithPatch\&[0-9],*) BASH_XTRACEFD="${DEBUG##updateWithPatch&}"; BASH_XTRACEFD="${BASH_XTRACEFD[0]}"; set -x;; esac
+
 status=
 for patchFilespec
 do
