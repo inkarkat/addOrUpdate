@@ -40,7 +40,8 @@ EXIT STATUS:
     1	The file(s) already existed, no modifications were made.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
-    4	None (with --all: at least one) of the passed PATCH(es) could not be applied.
+    4	None of the passed PATCH(es) could be applied.
+	With --all: At least one of the passed PATCH(es) could not be applied.
     5	A PATCH cannot be read.
 
 Example:
