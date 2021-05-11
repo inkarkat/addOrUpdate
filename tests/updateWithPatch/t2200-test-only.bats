@@ -2,8 +2,6 @@
 
 load temp
 
-export REVERTED_PATCH="${BATS_TEST_DIRNAME}/reverted.patch"
-
 @test "test-only reverse patch fails with 4 and skipping error, and keeps the original intact" {
     run updateWithPatch --test-only "$REVERTED_PATCH"
     [ $status -eq 4 ]
