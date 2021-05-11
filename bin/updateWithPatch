@@ -66,7 +66,7 @@ do
 	--in-place)	    shift; isInplace=t; patchInplaceArgs=();;
 	--inplace=*)	    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#--inplace=}"); shift;;
 	-i*)		    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#-i}"); shift;;
-	--test-only|-t)	    shift; isTestOnly=t;;
+	--test-only|-t)	    shift; isTestOnly=t; patchInplaceArgs=();;
 	--all)		    shift; isAll=t;;
 
 	-+([ceElnTuZ]))	    patchArgs+=("$1"); shift;;
@@ -108,7 +108,7 @@ fi >&2
 
 doPatch()
 {
-    patch --batch --silent "${patchInplaceArgs[@]}" "${patchReadOnlyArgs[@]}" "${patchRejectFileArgs[@]}" "$@"
+    patch --batch --silent ${isTestOnly:+--dry-run} "${patchInplaceArgs[@]}" "${patchReadOnlyArgs[@]}" "${patchRejectFileArgs[@]}" "$@"
 }
 
 status=
