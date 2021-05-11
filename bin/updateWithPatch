@@ -6,7 +6,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -35,8 +35,6 @@ HELPDESCRIPTION
     --all		    Instead of stopping after the first PATCH that is
 			    accepted, make sure that each PATCH actually
 			    applies.
-    --ignore-nonexisting    Succeed instead of complaining if (none of the)
-			    file(s) does not exist yet.
 EXIT STATUS:
     0	An update has happened
     1	The file(s) already existed, no modifications were made.
