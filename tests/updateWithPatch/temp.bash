@@ -2,6 +2,7 @@
 
 export PATCH="${BATS_TEST_DIRNAME}/diff.patch"
 export EXISTING="${BATS_TEST_DIRNAME}/existing.txt"
+export RESULT="${BATS_TEST_DIRNAME}/patched.txt"
 export FILE="${BATS_TMPDIR}/existing.txt"
 
 setup()
