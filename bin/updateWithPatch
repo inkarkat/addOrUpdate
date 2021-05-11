@@ -1,5 +1,6 @@
 #!/bin/bash
 set -o pipefail
+shopt -qs extglob
 
 printShortUsage()
 {
@@ -52,16 +53,28 @@ HELPTEXT
 isTestOnly=
 isAll=
 isInplace=
+typeset -a patchArgs=()
 typeset -a patchInplaceArgs=(--output=-)
 while [ $# -ne 0 ]
 do
     case "$1" in
 	--help|-h|-\?)	    shift; printLongUsage "$0"; exit 0;;
 	--in-place)	    shift; isInplace=t; patchInplaceArgs=();;
-	--inplace=*)	    isInplace=t; patchInplaceArgs=(--backup --prefix="${1#--inplace=}"); shift;;
-	-i*)		    isInplace=t; patchInplaceArgs=(--backup --prefix="${1#-i}"); shift;;
+	--inplace=*)	    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#--inplace=}"); shift;;
+	-i*)		    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#-i}"); shift;;
 	--test-only|-t)	    shift; isTestOnly=t;;
 	--all)		    shift; isAll=t;;
+
+	-+([ceElnTuZ]))	    patchArgs+=("$1"); shift;;
+	-p*)		    patchArgs+=("$1"); shift;;
+	--@(backup-if-mismatch|no-backup-if-mismatch|binary|context|ed|remove-empty-files|ignore-whitespace|merge|normal|posix|follow-symlinks|set-time|unified|verbose|set-utc))
+			    patchArgs+=("$1"); shift;;
+	-[dDFgprV])	    patchArgs+=("$1" "$2"); shift; shift;;
+	--@(directory|ifdef|fuzz|get|merge|strip|reject-file|read-only|reject-format|version-control)=*)
+			    patchArgs+=("$1"); shift;;
+	--@(directory|ifdef|fuzz|get|strip|reject-file|read-only|reject-format|version-control))
+			    patchArgs+=("$1" "$2"); shift; shift;;
+
 	--)		    shift; break;;
 	-*)		    { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
 	*)		    break;;

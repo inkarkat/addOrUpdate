@@ -15,3 +15,10 @@ load temp
     [ "$output" = "" ]
     cmp "$FILE" "$RESULT"
 }
+
+@test "patching with custom patch arguments" {
+    run updateWithPatch -p0 --unified --follow-symlinks -El "$PATCH"
+    [ $status -eq 0 ]
+    [ "$output" = "$(cat "$RESULT")" ]
+    cmp "$EXISTING" "$FILE"
+}
