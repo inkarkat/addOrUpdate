@@ -115,7 +115,7 @@ do
     doPatch "${patchDirectionArgs[@]}" --input "$patchFilespec"
     case $? in
 	0)  : ${status:=0};;
-	1)  if [ ${status:-4} -le 1 ] && doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec"; then
+	1)  if [ ${status:-4} -le 1 ] && doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
 		status=1
 	    elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
 		status=4
