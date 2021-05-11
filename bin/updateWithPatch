@@ -82,23 +82,22 @@ fi >&2
 
 doPatch()
 {
-    local patchFilespec="${1:?}"; shift
-    { cat -- "$patchFilespec" || return 5; } | patch --batch --silent "${patchInplaceArgs[@]}" "$@"
+    patch --batch --silent "${patchInplaceArgs[@]}" "$@"
 }
 
 status=
 for patchFilespec
 do
-    doPatch "$patchFilespec" --forward --read-only=fail --reject-file=-
+    doPatch --forward --read-only=fail --reject-file=- --input "$patchFilespec"
     case $? in
 	0)  : ${status:=0};;
-	1)  if [ ${status:-4} -le 1 ] && doPatch "$patchFilespec" --reverse --dry-run --read-only=fail --reject-file=-; then
+	1)  if [ ${status:-4} -le 1 ] && doPatch --reverse --dry-run --read-only=fail --reject-file=- --input "$patchFilespec"; then
 		status=1
 	    elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
 		status=4
 	    fi
 	    ;;
-	5)  status=5;;
+	2)  status=5;;
 	*)  status=3;;
     esac
 done
