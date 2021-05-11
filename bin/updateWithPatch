@@ -55,6 +55,8 @@ isAll=
 isInplace=
 typeset -a patchArgs=()
 typeset -a patchInplaceArgs=(--output=-)
+typeset -a patchDirectionArgs=(--forward)
+typeset -a patchReverseDirectionArgs=(--reverse)
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -67,6 +69,11 @@ do
 
 	-+([ceElnTuZ]))	    patchArgs+=("$1"); shift;;
 	-p*)		    patchArgs+=("$1"); shift;;
+	--forward|-N)	    shift;; # This is our default; ignore.
+	--reverse|-R)	    patchDirectionArgs=(--reverse)
+			    patchReverseDirectionArgs=(--forward)
+			    shift
+			    ;;
 	--@(backup-if-mismatch|no-backup-if-mismatch|binary|context|ed|remove-empty-files|ignore-whitespace|merge|normal|posix|follow-symlinks|set-time|unified|verbose|set-utc))
 			    patchArgs+=("$1"); shift;;
 	-[dDFgprV])	    patchArgs+=("$1" "$2"); shift; shift;;
@@ -101,10 +108,10 @@ doPatch()
 status=
 for patchFilespec
 do
-    doPatch --forward --read-only=fail --reject-file=- --input "$patchFilespec"
+    doPatch "${patchDirectionArgs[@]}" --read-only=fail --reject-file=- --input "$patchFilespec"
     case $? in
 	0)  : ${status:=0};;
-	1)  if [ ${status:-4} -le 1 ] && doPatch --reverse --dry-run --read-only=fail --reject-file=- --input "$patchFilespec"; then
+	1)  if [ ${status:-4} -le 1 ] && doPatch "${patchReverseDirectionArgs[@]}" --dry-run --read-only=fail --reject-file=- --input "$patchFilespec"; then
 		status=1
 	    elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
 		status=4
