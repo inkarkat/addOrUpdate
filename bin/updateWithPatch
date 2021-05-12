@@ -34,12 +34,13 @@ HELPDESCRIPTION
 			    result.
     --first		    Stop processing PATCH(es) after the first PATCH is
 			    accepted.
-    --all		    Ensure that each PATCH actually applies, instead of
-			    tolerating failures to apply PATCH(es) as long as at
-			    least one applies.
+    --all		    Ensure that each PATCH actually applies (or is has
+			    already been applied), instead of tolerating
+			    failures to apply PATCH(es) as long as at least one
+			    applies.
 EXIT STATUS:
-    0	An update has happened
-    1	The file(s) already existed, no modifications were made.
+    0	An update has happened.
+    1	The file(s) have already been patched, no modifications were made.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
     4	None of the passed PATCH(es) could be applied.
@@ -127,12 +128,21 @@ for patchFilespec
 do
     doPatch "${patchDirectionArgs[@]}" --input "$patchFilespec"
     case $? in
-	0)  : ${status:=0}
+	0)  if [ "$isAll" ]; then
+		[ ${status:-0} -le 1 ] && status=0
+	    else
+		status=0
+	    fi
+
 	    [ "$isFirst" ] && break
 	    ;;
-	1)  if [ ${status:-4} -le 1 ] && doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
-		status=1
-	    elif [ ${status:-4} -le 4 ] && [ "$isAll" ]; then
+	1)  if doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
+		if [ "$isAll" ]; then
+		    : ${status:=1}
+		elif [ ${status:-4} -ge 1 ]; then
+		    status=1
+		fi
+	    elif [ "$isAll" ]; then
 		status=4
 	    fi
 	    ;;

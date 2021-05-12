@@ -2,9 +2,9 @@
 
 load temp
 
-@test "test-only reverse patch fails with 4 and skipping error, and keeps the original intact" {
+@test "test-only reverse patch fails with 1 and skipping error, and keeps the original intact" {
     run updateWithPatch --test-only "$REVERTED_PATCH"
-    [ $status -eq 4 ]
+    [ $status -eq 1 ]
     [ "$output" = "Reversed (or previously applied) patch detected!  Skipping patch.
 1 out of 1 hunk ignored" ]
     cmp "$EXISTING" "$FILE"
