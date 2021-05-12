@@ -176,7 +176,11 @@ printAffectedFiles()
 	[ -z "${lines[-1]}" ] && unset 'lines[-1]'
 
 	if [ $status -eq 0 ]; then
-	    filespecs+=("${lines[@]#checking file }")
+	    local line; for line in "${lines[@]}"
+	    do
+		[[ "$line" =~ ^checking\ file\  ]] &&
+		    filespecs+=("${line#checking file }")
+	    done
 	    overallStatus=0
 	    [ "$isFirst" ] && break
 	fi
