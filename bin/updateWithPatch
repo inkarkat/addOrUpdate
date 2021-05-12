@@ -119,7 +119,7 @@ fi >&2
 
 doPatch()
 {
-    patch --batch --silent ${isTestOnly:+--dry-run} "${patchInplaceArgs[@]}" "${patchReadOnlyArgs[@]}" "${patchRejectFileArgs[@]}" "$@"
+    patch --batch ${isTestOnly:+--dry-run} "${patchArgs[@]}" "${patchInplaceArgs[@]}" "${patchReadOnlyArgs[@]}" "${patchRejectFileArgs[@]}" "$@"
 }
 
 processPatches()
@@ -127,7 +127,7 @@ processPatches()
     local forceStatus= status= patchFilespec
     for patchFilespec
     do
-	doPatch "${patchDirectionArgs[@]}" --input "$patchFilespec"
+	doPatch --silent "${patchDirectionArgs[@]}" --input "$patchFilespec"
 	case $? in
 	    0)  if [ "$isAll" ]; then
 		    [ ${status:-0} -le 1 ] && status=0
@@ -137,7 +137,7 @@ processPatches()
 
 		[ "$isFirst" ] && break
 		;;
-	    1)  if doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
+	    1)  if doPatch --silent "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
 		    if [ "$isAll" ]; then
 			: ${status:=1}
 		    elif [ ${status:-4} -ge 1 ]; then
