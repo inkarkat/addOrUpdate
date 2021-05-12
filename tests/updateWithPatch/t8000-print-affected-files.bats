@@ -3,8 +3,6 @@
 load temp
 load subdir
 
-export OTHER="${BATS_TMPDIR}/other.txt"
-
 @test "printing affected existing file keeps the original intact" {
     run updateWithPatch --print-affected-files "$PATCH"
     [ $status -eq 0 ]

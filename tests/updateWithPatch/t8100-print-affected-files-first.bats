@@ -3,8 +3,6 @@
 load temp
 load subdir
 
-export OTHER="${BATS_TMPDIR}/other.txt"
-
 @test "printing first affected existing and other files only prints the first file" {
     cp -f "$EXISTING" "$OTHER"
     run updateWithPatch --first --print-affected-files "$PATCH" <(renamePatchTarget "$OTHER" "$PATCH")
