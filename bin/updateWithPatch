@@ -194,6 +194,7 @@ printAffectedFiles()
 	fi
     done
 
+    [ ${#filespecs[@]} -eq 0 ] && return 1
     printf '%s\n' "${filespecs[@]}" | sort --unique
     return $overallStatus
 }
