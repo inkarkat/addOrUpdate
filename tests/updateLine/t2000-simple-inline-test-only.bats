@@ -11,7 +11,7 @@ load temp
 @test "in-place update with nonexisting line returns 1" {
     run updateLine --in-place --update-match "foosball=never" --replacement '&&' "$FILE"
     [ $status -eq 1 ]
-    [ "$(cat "$FILE")" = "$(cat "$INPUT")" ]
+    cmp "$FILE" "$INPUT"
 }
 
 @test "test-only update with nonexisting line returns 1" {
