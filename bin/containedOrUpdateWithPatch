@@ -58,6 +58,7 @@ HELPTEXT
 
 typeset -a updateWithPatchArgs=()
 typeset -a updateWithPatchInplaceArg=()
+typeset -a updateWithPatchReadOnlyArgs=()
 typeset -a memoizeDecisionArgs=()
 isTestOnly=
 name=
@@ -83,10 +84,12 @@ do
 	--@(backup-if-mismatch|no-backup-if-mismatch|binary|context|ed|forward|remove-empty-files|ignore-whitespace|merge|normal|posix|reverse|follow-symlinks|set-time|unified|verbose|set-utc))
 				    updateWithPatchArgs+=("$1"); shift;;
 	-[dDFgprV])		    updateWithPatchArgs+=("$1" "$2"); shift; shift;;
-	--@(directory|ifdef|fuzz|get|merge|strip|read-only|reject-file|reject-format|version-control)=*)
+	--@(directory|ifdef|fuzz|get|merge|strip|reject-file|reject-format|version-control)=*)
 				    updateWithPatchArgs+=("$1"); shift;;
-	--@(directory|ifdef|fuzz|get|strip|read-only|reject-file|reject-format|version-control))
+	--@(directory|ifdef|fuzz|get|strip|reject-file|reject-format|version-control))
 				    updateWithPatchArgs+=("$1" "$2"); shift; shift;;
+	--read-only=*)		    updateWithPatchReadOnlyArgs=("$1"); shift;;
+	--read-only)		    updateWithPatchReadOnlyArgs=("$1" "$2"); shift; shift;;
 	--)			    updateWithPatchArgs+=("$1"); shift; break;;
 
 	-)			    break;;
@@ -118,7 +121,9 @@ do
     fi
 done
 
-readarray -t affectedFilespecs < <(updateWithPatch --print-affected-files --include-already-patched "${updateWithPatchArgs[@]}" "$@" 2>/dev/null)
+# Note: Omit updateWithPatchReadOnlyArgs here, and instead suppress any warning
+# about read-only files.
+readarray -t affectedFilespecs < <(updateWithPatch --print-affected-files --include-already-patched --read-only=ignore "${updateWithPatchArgs[@]}" "$@" 2>/dev/null)
 [ -n "$name" ] || name="$(joinBy --empty '???' --summarize-larger '3 files' ', ' "${affectedFilespecs[@]}")"
 
 if [ ${#affectedFilespecs[@]} -gt 1 ]; then
@@ -136,7 +141,11 @@ fi
 
 # Note: Omit updateWithPatchInplaceArg here, as that would conflict with
 # --test-only.
-updateWithPatch --test-only "${updateWithPatchArgs[@]}" "$@" >/dev/null	# Suppress patch messages here.
+# Note: Omit updateWithPatchReadOnlyArgs here, as the test may be run (e.g. by
+# checkedAddOrUpdate) without sudo, and so we may not have rights to modify the
+# target file(s) right now, but we're just checking, anyway. Instead, suppress
+# any warning about read-only files.
+updateWithPatch --test-only --read-only=ignore "${updateWithPatchArgs[@]}" "$@" >/dev/null	# Suppress patch messages here.
 case $? in
     0)	if [ "$isTestOnly" ]; then
 	    if [ -z "${needsUpdateMessage+t}" ]; then
@@ -162,7 +171,7 @@ esac
 memoizeDecision "${memoizeDecisionArgs[@]}" --subject "$name" --verb "$verb" --state "yet contain $patches" --action "$action"
 status=$?
 case $status in
-    0)	exec updateWithPatch "${updateWithPatchInplaceArg[@]}" "${updateWithPatchArgs[@]}" "$@";;
+    0)	exec updateWithPatch "${updateWithPatchInplaceArg[@]}" "${updateWithPatchReadOnlyArgs[@]}" "${updateWithPatchArgs[@]}" "$@";;
     1)	exit 99;;
     *)	exit $status;;
 esac
