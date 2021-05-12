@@ -80,7 +80,8 @@ do
 	--what)			    shift; what="$1"; shift;;
 	--needs-update-message|-N)  shift; needsUpdateMessage="$1"; shift;;
 	--up-to-date-message|-M)    shift; upToDateMessage="$1"; shift;;
-	--in-place|--inplace=*|-i*) addOrUpdateBlockInplaceArg+=("$1"); shift;;
+	--in-place|--in-place=*|-i*)
+				    addOrUpdateBlockInplaceArg+=("$1"); shift;;
 	--test-only|-t)		    shift; isTestOnly=t;;
 	--all)			    addOrUpdateBlockArgs+=("$1"); shift; isAll=t;;
 	--marker|-m)		    addOrUpdateBlockArgs+=("$1" "$2"); markerName="$2"; shift; shift;;

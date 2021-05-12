@@ -73,7 +73,8 @@ do
 	--name|-n)		    shift; name="$1"; shift;;
 	--needs-update-message|-N)  shift; needsUpdateMessage="$1"; shift;;
 	--up-to-date-message|-M)    shift; upToDateMessage="$1"; shift;;
-	--in-place|--inplace=*|-i*) addOrUpdateLineInplaceArg+=("$1"); shift;;
+	--in-place|--in-place=*|-i*)
+				    addOrUpdateLineInplaceArg+=("$1"); shift;;
 	--test-only|-t)		    shift; isTestOnly=t;;
 	--all)			    addOrUpdateLineArgs+=("$1"); shift; isAll=t;;
 	--line|-l)		    addOrUpdateLineArgs+=("$1" "$2"); line="$2"; shift; shift;;
