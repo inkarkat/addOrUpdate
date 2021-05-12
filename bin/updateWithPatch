@@ -7,6 +7,8 @@ printShortUsage()
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
     printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
+    echo
+    printf 'Usage: %q %s\n' "$(basename "$1")" '--print-affected-files [-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...]'
 }
 printUsage()
 {
@@ -38,6 +40,8 @@ HELPDESCRIPTION
 			    already been applied), instead of tolerating
 			    failures to apply PATCH(es) as long as at least one
 			    applies.
+    --print-affected-files  Just check for updates and only print the filespecs
+			    that would be affected.
 EXIT STATUS:
     0	An update has happened.
     1	The file(s) have already been patched, no modifications were made.
@@ -67,6 +71,12 @@ while [ $# -ne 0 ]
 do
     case "$1" in
 	--help|-h|-\?)	    shift; printLongUsage "$0"; exit 0;;
+	--print-affected-files)
+			    shift
+			    action=printAffectedFiles
+			    isTestOnly=t; patchInplaceArgs=()
+			    ;;
+
 	--in-place)	    shift; isInplace=t; patchInplaceArgs=();;
 	--in-place=*)	    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#--in-place=}"); shift;;
 	-i*)		    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#-i}"); shift;;
@@ -152,6 +162,28 @@ processPatches()
 	esac
     done
     return ${forceStatus:-${status:-4}}
+}
+
+printAffectedFiles()
+{
+    local overallStatus=1 patchFilespec
+    typeset -a lines=() filespecs=()
+    for patchFilespec
+    do
+	readarray -t lines < <(LC_ALL=C doPatch "${patchDirectionArgs[@]}" --input "$patchFilespec"; printf '\n%d\n' "$?")	# Exit status from the process substitution is lost; return the actual exit status via an appended additional line.
+	local status=${lines[-1]}
+	unset 'lines[-1]'
+	[ -z "${lines[-1]}" ] && unset 'lines[-1]'
+
+	if [ $status -eq 0 ]; then
+	    filespecs+=("${lines[@]#checking file }")
+	    overallStatus=0
+	    [ "$isFirst" ] && break
+	fi
+    done
+
+    printf '%s\n' "${filespecs[@]}" | sort --unique
+    return $overallStatus
 }
 
 case ",${DEBUG:-}," in *,updateWithPatch,*) set -x;; esac
