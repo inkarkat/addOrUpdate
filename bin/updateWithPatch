@@ -8,7 +8,7 @@ printShortUsage()
     # skim the long one.
     printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
     echo
-    printf 'Usage: %q %s\n' "$(basename "$1")" '--print-affected-files [-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '--print-affected-files [--include-already-patched] [-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...]'
 }
 printUsage()
 {
@@ -42,6 +42,9 @@ HELPDESCRIPTION
 			    applies.
     --print-affected-files  Just check for updates and only print the filespecs
 			    that would be affected.
+    --include-already-patched
+			    Also print filespecs that have already been patched
+			    and are up-to-date.
 EXIT STATUS:
     0	An update has happened.
     1	The file(s) have already been patched, no modifications were made.
@@ -57,6 +60,7 @@ HELPTEXT
 }
 
 action=processPatches
+isIncludeAlreadyPatched=
 isTestOnly=
 isFirst=
 isAll=
@@ -76,6 +80,8 @@ do
 			    action=printAffectedFiles
 			    isTestOnly=t; patchInplaceArgs=()
 			    ;;
+	--include-already-patched)
+			    shift; isIncludeAlreadyPatched=t;;
 
 	--in-place)	    shift; isInplace=t; patchInplaceArgs=();;
 	--in-place=*)	    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#--in-place=}"); shift;;
@@ -166,6 +172,8 @@ processPatches()
 
 printAffectedFiles()
 {
+    [ "$isIncludeAlreadyPatched" ] && patchDirectionArgs=() # To detect a reversed patch (i.e. an up-to-date file), we need to suppress any patch direction arguments.
+
     local overallStatus=1 patchFilespec
     typeset -a lines=() filespecs=()
     for patchFilespec
