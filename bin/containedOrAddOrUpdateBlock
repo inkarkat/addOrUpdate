@@ -105,7 +105,8 @@ if [ $# -eq 0 -o "$1" = '-' ]; then # Note: This doesn't handle a later - argume
     }
     [ "${DEBUG:-}" ] || trap 'cleanup' EXIT
     cp /dev/stdin "$TMPFILE" || exit $?
-    set -- "$TMPFILE"	# Note: We trust that the user didn't erroneously passed --in-place. Normally, sed would complain ("no input files" or "can't read -: No such file or directory", but as we convert into a temporary file, this doesn't happen now.
+    shift
+    set -- "$TMPFILE" "$@"	# Note: We trust that the user didn't erroneously passed --in-place. Normally, sed would complain ("no input files" or "can't read -: No such file or directory", but as we convert into a temporary file, this doesn't happen now.
 fi
 
 verb="does not"
