@@ -1,0 +1,168 @@
+#!/bin/bash
+shopt -qs extglob
+
+printShortUsage()
+{
+    # Note: short followed by long option; if the user knows the short one, she can
+    # skim the long one.
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-g|--memoize-group GROUP] [--name NAME] [-N|--needs-update-message MSG] [-M|--up-to-date-message MSG] [-i[SUFFIX]|--in-place[=SUFFIX]] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
+}
+printUsage()
+{
+    # This is the short help when launched with no or incorrect arguments.
+    # It is printed to stderr to avoid accidental processing.
+    printShortUsage "$1" >&2
+    printf >&2 '\nTry %q --help for more information.\n' "$(basename "$1")"
+}
+printLongUsage()
+{
+    # This is the long "man page" when launched with the help argument.
+    # It is printed to stdout to allow paging with 'more'.
+    cat <<HELPDESCRIPTION
+If the at least one (all with --all) passed PATCH(es) have not yet been applied,
+asks the user whether to update the file(s).
+HELPDESCRIPTION
+    echo
+    printShortUsage "$1"
+    echo
+    cat <<HELPTEXT
+    --memoize-group|-g GROUP
+			    Optional application / use case for this tool's use.
+			    Determines the configuration directory.
+    --name|-n NAME	    Optional human-readable characterization of the
+			    PATCH(es) (will be used for querying and memoizing
+			    the decision). Defaults to the passed PATCH(es)
+			    themselves.
+    --needs-update-message|-N MSG
+			    Print MSG (instead of a message synthesized from
+			    PATCH and NAME) to standard error if --test-only and
+			    the PATCH requires an update.
+    --up-to-date-message|-M MSG
+			    Print MSG (instead of a message synthesized from
+			    PATCH and NAME) to standard error if the LINE already
+			    existed and no modifications were made.
+EXIT STATUS:
+    0	An update has happened.
+    1	The file(s) have already been patched, no modifications were made.
+    2	Bad invocation, wrong or missing command-line arguments.
+    3	Internal error or failed assertion.
+    4	None of the passed PATCH(es) could be applied.
+	With --all: At least one of the passed PATCH(es) could not be applied.
+    5	A PATCH cannot be read.
+    99	Update was declined by the user.
+
+Example:
+HELPTEXT
+    printf '%q %s\n' "$(basename "$1")" '-i.bak config.diff'
+}
+
+typeset -a updateWithPatchArgs=()
+typeset -a updateWithPatchInplaceArg=()
+typeset -a memoizeDecisionArgs=()
+isTestOnly=
+name=
+unset needsUpdateMessage
+unset upToDateMessage
+isAll=
+while [ $# -ne 0 ]
+do
+    case "$1" in
+	--help|-h|-\?)		    shift; printLongUsage "$0"; exit 0;;
+	--memoize-group|-g)	    memoizeDecisionArgs+=("$1" "$2"); shift; shift;;
+	--name|-n)		    shift; name="$1"; shift;;
+	--needs-update-message|-N)  shift; needsUpdateMessage="$1"; shift;;
+	--up-to-date-message|-M)    shift; upToDateMessage="$1"; shift;;
+	--in-place|--in-place=*|-i*)
+				    updateWithPatchInplaceArg+=("$1"); shift;;
+	--test-only|-t)		    shift; isTestOnly=t;;
+	--all)			    updateWithPatchArgs+=("$1"); shift; isAll=t;;
+	--first)		    updateWithPatchArgs+=("$1"); shift;;
+
+	-+([ceElnNRTuZ]))	    updateWithPatchArgs+=("$1"); shift;;
+	-p*)			    updateWithPatchArgs+=("$1"); shift;;
+	--@(backup-if-mismatch|no-backup-if-mismatch|binary|context|ed|forward|remove-empty-files|ignore-whitespace|merge|normal|posix|reverse|follow-symlinks|set-time|unified|verbose|set-utc))
+				    updateWithPatchArgs+=("$1"); shift;;
+	-[dDFgprV])		    updateWithPatchArgs+=("$1" "$2"); shift; shift;;
+	--@(directory|ifdef|fuzz|get|merge|strip|read-only|reject-file|reject-format|version-control)=*)
+				    updateWithPatchArgs+=("$1"); shift;;
+	--@(directory|ifdef|fuzz|get|strip|read-only|reject-file|reject-format|version-control))
+				    updateWithPatchArgs+=("$1" "$2"); shift; shift;;
+	--)			    updateWithPatchArgs+=("$1"); shift; break;;
+
+	-)			    break;;
+	-*)			    { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
+	*)			    break;;
+    esac
+done
+
+# Copy stdin into temporary file, as we may need to iterate over it.
+if [ "$1" = '-' ]; then # Note: This doesn't handle a later - argument, but mixing files and stdin is rare.
+    TMPFILE="$(mktemp --tmpdir "$(basename -- "$0")-XXXXXX" 2>/dev/null || echo "${TEMP:-/tmp}/$(basename -- "$0").$$$RANDOM")"
+    cleanup()
+    {
+	rm -f "$TMPFILE" 2>/dev/null
+    }
+    [ "${DEBUG:-}" ] || trap 'cleanup' EXIT
+    cp /dev/stdin "$TMPFILE" || exit $?
+    shift
+    set -- "$TMPFILE" "$@"
+fi
+
+patches=
+for patch
+do
+    if [ "$patch" = "$TMPFILE" ]; then
+	patches="${patches}${patches:+ and/or }a patch"
+    else
+	patches="${patches}${patches:+ and/or }$(basename -- "$patch")"
+    fi
+done
+
+readarray -t affectedFilespecs < <(updateWithPatch --print-affected-files --include-already-patched "${updateWithPatchArgs[@]}" "$@" 2>/dev/null)
+[ -n "$name" ] || name="$(joinBy --empty '???' --summarize-larger '3 files' ', ' "${affectedFilespecs[@]}")"
+
+if [ ${#affectedFilespecs[@]} -gt 1 ]; then
+    verb="do not"
+    negativeVerb="contain"
+else
+    verb="does not"
+    negativeVerb="contains"
+fi
+if [ $# -gt 1 ]; then
+    action="apply them"
+else
+    action="apply it"
+fi
+
+# Note: Omit updateWithPatchInplaceArg here, as that would conflict with
+# --test-only.
+updateWithPatch --test-only "${updateWithPatchArgs[@]}" "$@" >/dev/null	# Suppress patch messages here.
+case $? in
+    0)	if [ "$isTestOnly" ]; then
+	    if [ -z "${needsUpdateMessage+t}" ]; then
+		printf >&2 "%s %s contain %s; update required.\\n" "$name" "$verb" "$patches"
+	    elif [ -n "$needsUpdateMessage" ]; then
+		printf >&2 "%s\n" "$needsUpdateMessage"
+	    fi
+	    exit 0
+	fi
+	;;
+    1)	if [ -z "${upToDateMessage+t}" ]; then
+	    printf >&2 "%s already %s %s; no update necessary.\\n" "$name" "$negativeVerb" "$patches"
+	elif [ -n "$upToDateMessage" ]; then
+	    printf >&2 "%s\n" "$upToDateMessage"
+	fi
+	exit 1
+	;;
+    *)	exit $?;;
+esac
+
+
+[ "$memoizeDecisionArgs" ] || memoizeDecisionArgs=(--memoize-group "$(basename -- "$0").$PPID")
+memoizeDecision "${memoizeDecisionArgs[@]}" --subject "$name" --verb "$verb" --state "yet contain $patches" --action "$action"
+status=$?
+case $status in
+    0)	exec updateWithPatch "${updateWithPatchInplaceArg[@]}" "${updateWithPatchArgs[@]}" "$@";;
+    1)	exit 99;;
+    *)	exit $status;;
+esac
