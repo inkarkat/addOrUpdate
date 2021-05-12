@@ -1,0 +1,9 @@
+--- original.txt	2021-04-20 18:11:17.224412164 +0200
++++ existing.txt	2021-04-20 18:12:34.777777777 +0200
+@@ -1,5 +1,5 @@
++alternative first line
+ first line
+-second line
+-third line
++alternative second line
+ last line

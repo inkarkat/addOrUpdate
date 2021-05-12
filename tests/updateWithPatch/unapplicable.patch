@@ -1,0 +1,10 @@
+--- original.txt	2021-04-20 18:11:17.224412164 +0200
++++ existing.txt	2021-04-20 18:11:38.784418896 +0200
+@@ -1,5 +1,5 @@
++new first line
+ no right line
+-could not find
++augmented second line
+ should be the third line
+-should be second-to-last line
+ still wrong
