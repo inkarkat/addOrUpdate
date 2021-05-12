@@ -123,6 +123,7 @@ doPatch()
 case ",${DEBUG:-}," in *,updateWithPatch,*) set -x;; esac
 case ",${DEBUG:-}," in *,updateWithPatch\&[0-9],*) BASH_XTRACEFD="${DEBUG##updateWithPatch&}"; BASH_XTRACEFD="${BASH_XTRACEFD[0]}"; set -x;; esac
 
+forceStatus=
 status=
 for patchFilespec
 do
@@ -146,8 +147,8 @@ do
 		status=4
 	    fi
 	    ;;
-	2)  status=5;;
-	*)  status=3;;
+	2)  forceStatus=5;;
+	*)  forceStatus=3;;
     esac
 done
-exit ${status:-4}
+exit ${forceStatus:-${status:-4}}
