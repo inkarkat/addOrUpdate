@@ -67,7 +67,7 @@ do
     case "$1" in
 	--help|-h|-\?)	    shift; printLongUsage "$0"; exit 0;;
 	--in-place)	    shift; isInplace=t; patchInplaceArgs=();;
-	--inplace=*)	    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#--inplace=}"); shift;;
+	--in-place=*)	    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#--in-place=}"); shift;;
 	-i*)		    isInplace=t; patchInplaceArgs=(--backup --suffix="${1#-i}"); shift;;
 	--test-only|-t)	    shift; isTestOnly=t; patchInplaceArgs=();;
 	--first)	    shift; isFirst=t;;
