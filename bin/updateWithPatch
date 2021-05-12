@@ -52,6 +52,7 @@ HELPTEXT
     printf '%q %s\n' "$(basename "$1")" '-i.bak config.diff'
 }
 
+action=processPatches
 isTestOnly=
 isFirst=
 isAll=
@@ -121,35 +122,38 @@ doPatch()
     patch --batch --silent ${isTestOnly:+--dry-run} "${patchInplaceArgs[@]}" "${patchReadOnlyArgs[@]}" "${patchRejectFileArgs[@]}" "$@"
 }
 
+processPatches()
+{
+    local forceStatus= status= patchFilespec
+    for patchFilespec
+    do
+	doPatch "${patchDirectionArgs[@]}" --input "$patchFilespec"
+	case $? in
+	    0)  if [ "$isAll" ]; then
+		    [ ${status:-0} -le 1 ] && status=0
+		else
+		    status=0
+		fi
+
+		[ "$isFirst" ] && break
+		;;
+	    1)  if doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
+		    if [ "$isAll" ]; then
+			: ${status:=1}
+		    elif [ ${status:-4} -ge 1 ]; then
+			status=1
+		    fi
+		elif [ "$isAll" ]; then
+		    status=4
+		fi
+		;;
+	    2)  forceStatus=5;;
+	    *)  forceStatus=3;;
+	esac
+    done
+    return ${forceStatus:-${status:-4}}
+}
+
 case ",${DEBUG:-}," in *,updateWithPatch,*) set -x;; esac
 case ",${DEBUG:-}," in *,updateWithPatch\&[0-9],*) BASH_XTRACEFD="${DEBUG##updateWithPatch&}"; BASH_XTRACEFD="${BASH_XTRACEFD[0]}"; set -x;; esac
-
-forceStatus=
-status=
-for patchFilespec
-do
-    doPatch "${patchDirectionArgs[@]}" --input "$patchFilespec"
-    case $? in
-	0)  if [ "$isAll" ]; then
-		[ ${status:-0} -le 1 ] && status=0
-	    else
-		status=0
-	    fi
-
-	    [ "$isFirst" ] && break
-	    ;;
-	1)  if doPatch "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
-		if [ "$isAll" ]; then
-		    : ${status:=1}
-		elif [ ${status:-4} -ge 1 ]; then
-		    status=1
-		fi
-	    elif [ "$isAll" ]; then
-		status=4
-	    fi
-	    ;;
-	2)  forceStatus=5;;
-	*)  forceStatus=3;;
-    esac
-done
-exit ${forceStatus:-${status:-4}}
+$action "$@"
