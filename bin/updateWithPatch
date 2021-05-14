@@ -71,6 +71,7 @@ typeset -a patchDirectionArgs=(--forward)
 typeset -a patchReverseDirectionArgs=(--reverse)
 typeset -a patchReadOnlyArgs=(--read-only=fail)
 typeset -a patchRejectFileArgs=(--reject-file=-)
+patchBaseDirectory=
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -99,11 +100,13 @@ do
 			    ;;
 	--@(backup-if-mismatch|no-backup-if-mismatch|binary|context|ed|remove-empty-files|ignore-whitespace|merge|normal|posix|follow-symlinks|set-time|unified|verbose|set-utc))
 			    patchArgs+=("$1"); shift;;
-	-[dDFgprV])	    patchArgs+=("$1" "$2"); shift; shift;;
-	--@(directory|ifdef|fuzz|get|merge|strip|reject-format|version-control)=*)
+	-[DFgprV])	    patchArgs+=("$1" "$2"); shift; shift;;
+	--@(ifdef|fuzz|get|merge|strip|reject-format|version-control)=*)
 			    patchArgs+=("$1"); shift;;
-	--@(directory|ifdef|fuzz|get|strip|reject-format|version-control))
+	--@(ifdef|fuzz|get|strip|reject-format|version-control))
 			    patchArgs+=("$1" "$2"); shift; shift;;
+	--directory|-d)	    patchArgs+=("$1" "$2"); patchBaseDirectory="$2"; shift; shift;;
+	--directory=*)	    patchArgs+=("$1"); patchBaseDirectory="${1#--directory=}"; shift;;
 	--read-only=*)	    patchReadOnlyArgs=("$1"); shift;;
 	--read-only)	    patchReadOnlyArgs=("$1" "$2"); shift; shift;;
 	--reject-file=*)    patchRejectFileArgs=("$1"); shift;;
@@ -170,6 +173,18 @@ processPatches()
     return ${forceStatus:-${status:-4}}
 }
 
+translatePatchBaseDirectory()
+{
+    [ -n "$patchBaseDirectory" ] || return 1
+    cd "$patchBaseDirectory" || return 1
+
+    filespecs=()
+    local filespec; for filespec
+    do
+	filespecs+=("$(realpath --no-symlinks -- "$filespec")")
+    done
+}
+
 printAffectedFiles()
 {
     [ "$isIncludeAlreadyPatched" ] && patchDirectionArgs=() # To detect a reversed patch (i.e. an up-to-date file), we need to suppress any patch direction arguments.
@@ -195,6 +210,8 @@ printAffectedFiles()
     done
 
     [ ${#filespecs[@]} -eq 0 ] && return 1
+    translatePatchBaseDirectory "${filespecs[@]}"
+
     printf '%s\n' "${filespecs[@]}" | sort --unique
     return $overallStatus
 }
