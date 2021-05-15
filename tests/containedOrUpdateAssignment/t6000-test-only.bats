@@ -6,7 +6,7 @@ load temp
     init
     run containedOrUpdateAssignment --test-only --in-place --lhs foo --rhs bar "$FILE"
     [ $status -eq 1 ]
-    [ "$output" = "$FILE already contains 'foo=bar'; no update necessary." ]
+    [ "$output" = "$FILE does not match or already contains 'foo=bar'; no update possible / necessary." ]
     cmp -- "$INPUT" "$FILE"
 }
 

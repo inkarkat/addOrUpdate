@@ -8,11 +8,18 @@ load temp
     cmp -- "$INPUT" "$FILE"
 }
 
+@test "returns 1 and error message if the file does not have such an assignment" {
+    init
+    run containedOrUpdateAssignment --in-place --lhs "nowhereToBeFound" --rhs bar "$FILE"
+    [ $status -eq 1 ]
+    [ "$output" = "$FILE does not match or already contains 'nowhereToBeFound=bar'; no update possible / necessary." ]
+}
+
 @test "returns 1 and error message if the file already contains the assignment" {
     init
     run containedOrUpdateAssignment --in-place --lhs foo --rhs bar "$FILE"
     [ $status -eq 1 ]
-    [ "$output" = "$FILE already contains 'foo=bar'; no update necessary." ]
+    [ "$output" = "$FILE does not match or already contains 'foo=bar'; no update possible / necessary." ]
 }
 
 @test "returns 1 and error message mentioning the name if the file already contains the assignment" {
@@ -20,7 +27,7 @@ load temp
     NAME="My test file"
     run containedOrUpdateAssignment --in-place --name "$NAME" --lhs foo --rhs bar "$FILE"
     [ $status -eq 1 ]
-    [ "$output" = "$NAME already contains 'foo=bar'; no update necessary." ]
+    [ "$output" = "$NAME does not match or already contains 'foo=bar'; no update possible / necessary." ]
 }
 
 @test "returns 1 and no error message with an empty one passed if the file already contains the assignment" {

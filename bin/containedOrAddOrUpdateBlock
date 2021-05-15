@@ -139,7 +139,7 @@ case $? in
 	fi
 	;;
     1)	if [ -z "${upToDateMessage+t}" ]; then
-	    printf >&2 "%s already %s %s; no update necessary.\\n" "${name:-$subject}" "$negativeVerb" "${what:-${markerName:-the block}}"
+	    printf >&2 "%s%s already %s %s; no update %snecessary.\\n" "${name:-$subject}" "${ADDORUPDATEBLOCK_NO_APPEND:+ ${verb} have or}" "$negativeVerb" "${what:-${markerName:-the block}}" "${ADDORUPDATEBLOCK_NO_APPEND:+possible / }"
 	elif [ -n "$upToDateMessage" ]; then
 	    printf >&2 "%s\n" "$upToDateMessage"
 	fi

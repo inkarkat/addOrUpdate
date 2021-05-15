@@ -16,7 +16,7 @@ more"
     export MEMOIZEDECISION_CHOICE=n
     run pipedContainedOrAddOrUpdateAssignment "$INPUT" --lhs foo --rhs bar
     [ $status -eq 1 ]
-    [[ "$output" =~ " already contains 'foo=bar'; no update necessary."$ ]]
+    [[ "$output" =~ " does not match or already contains 'foo=bar'; no update possible / necessary."$ ]]
 }
 
 @test "returns 1 and no output if stdin as - already contains the line" {
@@ -27,7 +27,7 @@ more"
     export MEMOIZEDECISION_CHOICE=n
     run pipedContainedOrAddOrUpdateAssignment "$INPUT" --lhs foo --rhs bar -
     [ $status -eq 1 ]
-    [[ "$output" =~ " already contains 'foo=bar'; no update necessary."$ ]]
+    [[ "$output" =~ " does not match or already contains 'foo=bar'; no update possible / necessary."$ ]]
 }
 
 @test "asks and returns 99 and no output if the update is declined by the user" {
