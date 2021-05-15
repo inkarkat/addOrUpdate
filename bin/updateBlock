@@ -5,6 +5,7 @@ printUsage()
     addOrUpdateBlock --help 2>&1 | sed \
 	-e '1s#^.*$#Updates a sequence of lines that starts with BEGIN-LINE and ends with END-LINE (once, in the first file to match, or in all with --all (but still just the first such matching block in each)) in the passed FILE(s) with BLOCK contents.#' \
 	-e '2b removeFirstParagraphLoop' \
+	-e 's/The BLOCK already existed, no modifications were made\./No marker WHAT, or the BLOCK already existed, no modifications were\n	made./' \
 	-e '/^ *\(--create-nonexisting\|--pre-line\|--post-line\)/b removeOptionLoop' \
 	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateBlock /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting//; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
 	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateBlock /\1\2'"$(basename "$1") / }" \
