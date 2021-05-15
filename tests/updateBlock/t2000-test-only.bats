@@ -9,7 +9,7 @@ load temp
     cmp "$FILE" "$FRESH"
 }
 
-@test "test-only update with nonexisting marker returns 1" {
+@test "test-only update with nonexisting marker and multi-line block returns 1" {
     run updateBlock --test-only --marker test --block-text $'across\nmultiple\nlines' "$FILE"
     [ $status -eq 1 ]
     [ "$output" = "" ]
