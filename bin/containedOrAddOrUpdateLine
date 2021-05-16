@@ -146,7 +146,7 @@ esac
 
 
 [ "$memoizeDecisionArgs" ] || memoizeDecisionArgs=(--memoize-group "$(basename -- "$0").$PPID")
-memoizeDecision "${memoizeDecisionArgs[@]}" --subject "${name:-$subject}" --verb "$verb" --state "yet contain $lineReplacement" --action "$action"
+${MEMOIZEDECISION:-memoizeDecision} "${memoizeDecisionArgs[@]}" --subject "${name:-$subject}" --verb "$verb" --state "yet contain $lineReplacement" --action "$action"
 status=$?
 case $status in
     0)	exec addOrUpdateLine "${addOrUpdateLineInplaceArg[@]}" "${addOrUpdateLineArgs[@]}" "$@";;

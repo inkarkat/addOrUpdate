@@ -168,7 +168,7 @@ esac
 
 
 [ "$memoizeDecisionArgs" ] || memoizeDecisionArgs=(--memoize-group "$(basename -- "$0").$PPID")
-memoizeDecision "${memoizeDecisionArgs[@]}" --subject "$name" --verb "$verb" --state "yet contain $patches" --action "$action"
+${MEMOIZEDECISION:-memoizeDecision} "${memoizeDecisionArgs[@]}" --subject "$name" --verb "$verb" --state "yet contain $patches" --action "$action"
 status=$?
 case $status in
     0)	exec updateWithPatch "${updateWithPatchInplaceArg[@]}" "${updateWithPatchReadOnlyArgs[@]}" "${updateWithPatchArgs[@]}" "$@";;
