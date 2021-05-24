@@ -10,7 +10,7 @@ printUsage()
 	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateBlock /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting//; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
 	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateBlock /\1\2'"$(basename "$1") / }" \
 	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
-	-e b -e :removeOptionLoop -e '{ /\n *\(--create-nonexisting\|--pre-line\|--post-line\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^ ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
+	-e b -e :removeOptionLoop -e '{ /\n *\(--create-nonexisting\|--pre-line\|--post-line\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
 }
 case "$1" in
     --help|-h|-\?)	shift; printUsage "$0"; exit 0;;
