@@ -6,6 +6,8 @@ printShortUsage()
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
     printf 'Usage: %q %s\n' "$(basename "$1")" '[-y|--yes] [-g|--memoize-group GROUP] [--name NAME] [-N|--needs-update-message MSG] [-M|--up-to-date-message MSG] [-i[SUFFIX]|--in-place[=SUFFIX]] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
+    echo
+    printf 'Usage: %q %s\n' "$(basename "$1")" '--print-affected-files [--include-already-patched] [-y|--yes] [-g|--memoize-group GROUP] [--name NAME] [-N|--needs-update-message MSG] [-M|--up-to-date-message MSG] [-i[SUFFIX]|--in-place[=SUFFIX]] [--first|--all] [PATCH-ARGS ...] [--] PATCH [...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -67,6 +69,7 @@ name=
 unset needsUpdateMessage
 unset upToDateMessage
 isAll=
+isPrintAffectedFiles=
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -79,6 +82,8 @@ do
 	--in-place|--in-place=*|-i*)
 				    updateWithPatchInplaceArg+=("$1"); shift;;
 	--test-only|-t)		    shift; isTestOnly=t;;
+	--print-affected-files)	    updateWithPatchArgs+=("$1"); shift; isPrintAffectedFiles=t;;
+	--include-already-patched)  updateWithPatchArgs+=("$1"); shift;;
 	--all)			    updateWithPatchArgs+=("$1"); shift; isAll=t;;
 	--first)		    updateWithPatchArgs+=("$1"); shift;;
 
@@ -100,6 +105,8 @@ do
 	*)			    break;;
     esac
 done
+
+[ "$isPrintAffectedFiles" ] && exec updateWithPatch "${updateWithPatchArgs[@]}" "$@"
 
 # Copy stdin into temporary file, as we may need to iterate over it.
 if [ "$1" = '-' ]; then # Note: This doesn't handle a later - argument, but mixing files and stdin is rare.
