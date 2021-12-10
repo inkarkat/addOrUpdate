@@ -106,7 +106,7 @@ do
     esac
 done
 
-[ "$isPrintAffectedFiles" ] && exec updateWithPatch "${updateWithPatchArgs[@]}" "$@"
+[ "$isPrintAffectedFiles" ] && exec updateWithPatch "${updateWithPatchReadOnlyArgs[@]}" "${updateWithPatchArgs[@]}" "$@"
 
 # Copy stdin into temporary file, as we may need to iterate over it.
 if [ "$1" = '-' ]; then # Note: This doesn't handle a later - argument, but mixing files and stdin is rare.
