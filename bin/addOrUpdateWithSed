@@ -56,7 +56,7 @@ EXIT STATUS:
 
 Example:
 HELPTEXT
-    printf '%q %s\n' "$(basename "$1")" '-i.bak TODO'
+    printf 'echo $RANDOM | %q %s\n' "$(basename "$1")" "-e '/[02468]$/{ h; s/$/ (even)/ }' -e '\${ x; /^$/{ x; q99 }; x }'"
 }
 
 isTestOnly=
