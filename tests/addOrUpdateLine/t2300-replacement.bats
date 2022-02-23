@@ -51,6 +51,18 @@ foo=bar
 foo=hi' ]
 }
 
+@test "REPLACEMENT with newlines" {
+    run addOrUpdateLine --line "foo=new" --update-match '^foo=h.*$' --replacement $'the new\nis\nlonger' "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = 'sing/e=wha\ever
+foo=bar
+the new
+is
+longer
+# SECTION
+foo=hi' ]
+}
+
 @test "empty REPLACEMENT" {
     run addOrUpdateLine --line "foo=new" --update-match '^foo=h.*$' --replacement "" "$FILE"
 

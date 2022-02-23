@@ -74,7 +74,8 @@ HELPDESCRIPTION
     --replacement|-r REPLACEMENT
 			    Replace with REPLACEMENT instead of the literal LINE
 			    when a matching one has been found. This allows the
-			    use of references like \1 and &.
+			    use of references like \1 and &. Literal backslashes
+			    need to be doubled; literal & escaped.
     --pre-line PRETEXT	    When a fresh LINE is added, put PRETEXT before it.
 			    This does not apply to the update of existing lines.
 			    (This is assumed to be for comments or headers that
@@ -131,7 +132,7 @@ do
 	--line|-l)	    shift; line="$1"; shift;;
 	--accept-match|-a)  shift; acceptMatch="$1"; shift;;
 	--update-match|-u)  shift; updateMatch="$1"; shift;;
-	--replacement|-r)   shift; replacement="$1"; shift;;
+	--replacement|-r)   shift; replacement="${1//${NL}/\\n}"; shift;;
 	--pre-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPreLines="${freshPreLines}${freshPreLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
 	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPostLines="${freshPostLines}${freshPostLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
 	--pre-update)	    shift; updatePreLines="${updatePreLines}${updatePreLines:+\\n}$(literalReplacement "$1")"; shift;;
