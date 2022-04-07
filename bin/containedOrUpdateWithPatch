@@ -125,9 +125,9 @@ patches=
 for patch
 do
     if [ "$patch" = "$TMPFILE" ]; then
-	patches="${patches}${patches:+ and/or }a patch"
+	patches+="${patches:+ and/or }a patch"
     else
-	patches="${patches}${patches:+ and/or }$(basename -- "$patch")"
+	patches+="${patches:+ and/or }$(basename -- "$patch")"
     fi
 done
 

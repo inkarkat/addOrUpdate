@@ -107,7 +107,7 @@ if [ $# -eq 0 -o "$1" = '-' ]; then # Note: This doesn't handle a later - argume
 fi
 
 lineReplacement=${line:+\'}${line}${line:+\'}
-[ -n "$replacement" ] && lineReplacement="${lineReplacement}${lineReplacement:+ / }'${replacement}'"
+[ -n "$replacement" ] && lineReplacement+="${lineReplacement:+ / }'${replacement}'"
 verb="does not"
 negativeVerb="contains"
 action="update it"

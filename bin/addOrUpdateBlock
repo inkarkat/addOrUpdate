@@ -126,17 +126,17 @@ do
 	--block-file|-B)    shift
 			    text="$(<"$1")" || exit 6
 			    shift
-			    escapedText="${text//\\/\\\\}"; insertableBlockText="${insertableBlockText}${insertableBlockText:+\\$NL}${escapedText//${NL}/\\$NL}"
-			    literalBlockTextPattern="${literalBlockTextPattern}${literalBlockTextPattern:+\\n}$(printf %s "$text" | literalPattern)"
+			    escapedText="${text//\\/\\\\}"; insertableBlockText+="${insertableBlockText:+\\$NL}${escapedText//${NL}/\\$NL}"
+			    literalBlockTextPattern+="${literalBlockTextPattern:+\\n}$(printf %s "$text" | literalPattern)"
 			    ;;
 	--block-text|-b)    shift
-			    escapedText="${1//\\/\\\\}"; insertableBlockText="${insertableBlockText}${insertableBlockText:+\\$NL}${escapedText//${NL}/\\$NL}"
-			    literalBlockTextPattern="${literalBlockTextPattern}${literalBlockTextPattern:+\\n}$(printf %s "$1" | literalPattern)"
+			    escapedText="${1//\\/\\\\}"; insertableBlockText+="${insertableBlockText:+\\$NL}${escapedText//${NL}/\\$NL}"
+			    literalBlockTextPattern+="${literalBlockTextPattern:+\\n}$(printf %s "$1" | literalPattern)"
 			    shift
 			    ;;
 	--accept-match|-a)  shift; acceptMatch="$1"; shift;;
-	--pre-line)	    shift; escapedLine="${1//\\/\\\\}"; insertablePreLines="${insertablePreLines}${insertablePreLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
-	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; insertablePostLines="${insertablePostLines}${insertablePostLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
+	--pre-line)	    shift; escapedLine="${1//\\/\\\\}"; insertablePreLines+="${insertablePreLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
+	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; insertablePostLines+="${insertablePostLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
 	--add-before)	    shift; addBeforeAddress="$1"; shift;;
 	--)		    shift; break;;
 	-)		    break;;
@@ -196,9 +196,9 @@ create()
     echo > "$filespec" || return 1
 
     local insertableContent=
-    [ -n "${insertablePreLines+t}" ] && insertableContent="${insertableContent}${insertablePreLines}\\${NL}"
-    insertableContent="${insertableContent}${insertableBeginMarker}\\${NL}${insertableBlockText}\\${NL}${insertableEndMarker}"
-    [ -n "${insertablePostLines+t}" ] && insertableContent="${insertableContent}\\${NL}${insertablePostLines}"
+    [ -n "${insertablePreLines+t}" ] && insertableContent+="${insertablePreLines}\\${NL}"
+    insertableContent+="${insertableBeginMarker}\\${NL}${insertableBlockText}\\${NL}${insertableEndMarker}"
+    [ -n "${insertablePostLines+t}" ] && insertableContent+="\\${NL}${insertablePostLines}"
     typeset -a sedProgram=(
 	-e "\$c\\${NL}${insertableContent}"
     )

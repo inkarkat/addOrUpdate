@@ -133,10 +133,10 @@ do
 	--accept-match|-a)  shift; acceptMatch="$1"; shift;;
 	--update-match|-u)  shift; updateMatch="$1"; shift;;
 	--replacement|-r)   shift; replacement="${1//${NL}/\\n}"; shift;;
-	--pre-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPreLines="${freshPreLines}${freshPreLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
-	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPostLines="${freshPostLines}${freshPostLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
-	--pre-update)	    shift; updatePreLines="${updatePreLines}${updatePreLines:+\\n}$(literalReplacement "$1")"; shift;;
-	--post-update)	    shift; updatePostLines="${updatePostLines}${updatePostLines:+\\n}$(literalReplacement "$1")"; shift;;
+	--pre-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPreLines+="${freshPreLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
+	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPostLines+="${freshPostLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
+	--pre-update)	    shift; updatePreLines+="${updatePreLines:+\\n}$(literalReplacement "$1")"; shift;;
+	--post-update)	    shift; updatePostLines+="${updatePostLines:+\\n}$(literalReplacement "$1")"; shift;;
 	--add-before)	    shift; addBeforeAddress="$1"; shift;;
 	--add-after)	    shift; addAfterAddress="$1"; shift;;
 	--)		    shift; break;;
@@ -201,9 +201,9 @@ create()
     echo > "$filespec" || return 1
 
     local content=
-    [ -n "${freshPreLines+t}" ] && content="${content}${freshPreLines}\\${NL}"
-    content="${content}${insertableLine}"
-    [ -n "${freshPostLines+t}" ] && content="${content}\\${NL}${freshPostLines}"
+    [ -n "${freshPreLines+t}" ] && content+="${freshPreLines}\\${NL}"
+    content+="$insertableLine"
+    [ -n "${freshPostLines+t}" ] && content+="\\${NL}${freshPostLines}"
     typeset -a sedProgram=(
 	-e "\$c\\${NL}${content}"
     )
