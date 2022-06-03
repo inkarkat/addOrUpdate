@@ -4,7 +4,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] SED-ARGS [...] -- [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] SED-ARGS [--last-file SED-PROGRAM-ARG [...]] [...] -- [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -40,11 +40,16 @@ HELPDESCRIPTION
 			    result.
     --all		    Instead of just updating the first to match or
 			    appending to the last FILE, make sure that each FILE
-			    gets updated.
+			    gets updated (via the special --last-file sed
+			    program).
     --ignore-nonexisting    Succeed instead of complaining if (none of the)
 			    FILE(s) does not exist yet.
     --create-nonexisting    Create the first (each with --all) passed FILE if it
 			    does not exist yet, (and insert the LINE there).
+    --last-file SED-PROGRAM-ARG [...]
+			    Add -e SED-PROGRAM-ARG when the last FILE is
+			    processed (or --all is given). This can be used to
+			    append to the last FILE only.
 
 EXIT STATUS:
     0	An update has happened (with --all: in at least one FILE).
@@ -64,6 +69,7 @@ isAll=
 isIgnoreNonexisting=
 isCreateNonexisting=
 typeset -a sedProgram=()
+typeset -a sedLastFileProgram=()
 typeset -a sedInplaceArgs=()
 line=
 acceptMatch=
@@ -87,11 +93,12 @@ do
 			    shift; isIgnoreNonexisting=t;;
 	--create-nonexisting)
 			    shift; isCreateNonexisting=t;;
+	--last-file)	    shift; sedLastFileProgram+=(-e "$1"); shift;;
 	--)		    shift; break;;
-	*)		    sedProgram+=("$1"); shift;;
+	*)		    sedProgram+=("$1"); sedLastFileProgram+=("$1"); shift;;
     esac
 done
-if [ ${#sedProgram[@]} -eq 0 ]; then
+if [ ${#sedLastFileProgram[@]} -eq 0 ]; then
     echo 'ERROR: No SED-ARGS passed.'
     echo
     printUsage "$0"
@@ -111,27 +118,34 @@ fi >&2
 [ $# -eq 0 ] && set -- -    # Read from stdin if no FILE is passed.
 create()
 {
+    local isLastFile="${1?}"; shift
     local filespec="$1"; shift
     # If the file is completely empty, sed treats this as zero lines, and no
     # address (not 1, not $) will match; the whole invocation would be a no-op.
     # Therefore, start with a single empty line, and change that one instead.
     echo > "$filespec" || return 1
 
-    process "$filespec"
+    process "$isLastFile" "$filespec"
 }
 process()
 {
+    local isLastFile="${1?}"; shift
     local filespec="$1"; shift
+    [ "$isLastFile" ] && \
+	typeset -a sedArgs=("${sedLastFileProgram[@]}") || \
+	typeset -a sedArgs=("${sedProgram[@]}")
 
     sed "${sedInplaceArgs[@]}" \
-	"${sedProgram[@]}" \
+	"${sedArgs[@]}" \
 	-- "$filespec"
 }
 
 hadSuccess=
 let existingCount=0
+isLastFile="$isAll"
 for ((i = 1; i <= $#; i++))
 do
+    [ $i -eq $# ] && isLastFile=t
     filespec="${@:$i:1}"
     if [ "$filespec" = '-' -o -e "$filespec" ]; then
 	let existingCount+=1
@@ -139,7 +153,7 @@ do
 	if [ "$isTestOnly" ]; then
 	    status=0
 	else
-	    create "$filespec"
+	    create "$isLastFile" "$filespec"
 	    status=$?
 	fi
 	case $status in
@@ -152,7 +166,7 @@ do
 	continue
     fi
 
-    eval 'process "$filespec"' "${isTestOnly:+>/dev/null}"
+    eval 'process "$isLastFile" "$filespec"' "${isTestOnly:+>/dev/null}"
     status=$?
     case $status in
 	0)	[ "$isAll" ] && hadSuccess=t || exit $status;;
