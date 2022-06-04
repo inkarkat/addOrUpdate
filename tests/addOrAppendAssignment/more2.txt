@@ -1,0 +1,3 @@
+foo=""
+quux="initial value"
+foo="moo bar baz"
