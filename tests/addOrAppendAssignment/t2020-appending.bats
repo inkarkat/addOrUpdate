@@ -19,3 +19,11 @@ fox="hi there"' ]
 quux="initial value"
 fox=' ]
 }
+
+@test "update inserts to empty unquoted value" {
+    run addOrAppendAssignment --lhs fox --rhs added "$FILE2"
+    [ $status -eq 0 ]
+    [ "$output" = 'foo=""
+quux="initial value"
+fox="added"' ]
+}
