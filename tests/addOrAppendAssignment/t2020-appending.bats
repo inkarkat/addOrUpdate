@@ -13,17 +13,19 @@ fox="hi there"' ]
 }
 
 @test "update inserts to empty quoted value" {
-    run addOrAppendAssignment --lhs foo --rhs added "$FILE2"
+    run addOrAppendAssignment --lhs foy --rhs added "$FILE2"
     [ $status -eq 0 ]
-    [ "$output" = 'foo="added"
+    [ "$output" = 'foo="bar"
 quux="initial value"
-fox=' ]
+fox=
+foy="added"' ]
 }
 
 @test "update inserts to empty unquoted value" {
     run addOrAppendAssignment --lhs fox --rhs added "$FILE2"
     [ $status -eq 0 ]
-    [ "$output" = 'foo=""
+    [ "$output" = 'foo="bar"
 quux="initial value"
-fox="added"' ]
+fox="added"
+foy=""' ]
 }

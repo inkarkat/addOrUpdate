@@ -1,3 +1,4 @@
-foo=""
+foo="bar"
 quux="initial value"
 fox=
+foy=""
