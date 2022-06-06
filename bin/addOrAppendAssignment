@@ -4,7 +4,7 @@
 : ${ASSIGNMENT_SEPARATOR=' '}
 
 typeset -a usageOverrideArgs=(
-    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateWithSed /\1\2ASSIGNMENT_QUOTE=\\" ASSIGNMENT_SEPARATOR=" " '"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/ SED-ARGS \[\.\.\.\] / /; s/--create-nonexisting\]/& [--add-before|-add-after ADDRESS]/ }'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateWithSed /\1\2ASSIGNMENT_QUOTE=\\" ASSIGNMENT_SEPARATOR=" " '"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/ SED-ARGS \[--last-file SED-PROGRAM-ARG \[...\]\] \[\.\.\.\] / /; s/--create-nonexisting\]/& [--add-before|--add-after ADDRESS]/ }'
 )
 printUsage()
 {
@@ -19,6 +19,7 @@ printLongUsage()
 	-e '1s#^.*$#Tries to locate an assignment in the form ASSIGNEE="..." in at least one (all with --all) of the passed FILE(s), and updates it so that VALUE gets appended (separated from existing value(s) with a space, in the first file to match, and only the first such matching assignment there), or appends ASSIGNEE="VALUE" (at the end of the last FILE) if such assignment does not exist yet.#' \
 	-e '2b removeFirstParagraphLoop' \
 	-e 's/LINE/assignment/g' \
+	-e '/^ *\(--last-file\)/b removeOptionLoop' \
 	-e "/^ *--in-place/i\\
     --lhs|-l ASSIGNEE	    Locate the first line that has ASSIGNEE=\"...\"\\
     --rhs|-r VALUE	    Append space and VALUE after the original value.' \\
@@ -29,8 +30,9 @@ printLongUsage()
 			    the FILE. Any existing assignments that follow that\\
 			    line won't be considered!" \
 	"${usageOverrideArgs[@]}" \
-	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateWithSed .*/\1\2'"$(basename "$1") -l 'export FOO' -r quux .bashrc/ }" \
-	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }'
+	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?.*addOrUpdateWithSed .*/\1\2 '"$(basename "$1") -l GRUB_CMDLINE_LINUX_DEFAULT -r debug \/etc\/default\/grub/ }" \
+	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
+	-e b -e :removeOptionLoop -e '{ /\n *\(--last-file\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
 }
 
 unset lhs
