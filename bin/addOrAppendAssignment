@@ -1,7 +1,7 @@
 #!/bin/bash
 
 : ${ASSIGNMENT_QUOTE=\"}
-: ${ASSIGNMENT_SEPARATOR:=' '}
+: ${ASSIGNMENT_SEPARATOR=' '}
 
 typeset -a usageOverrideArgs=(
     -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateWithSed /\1\2ASSIGNMENT_QUOTE=\\" ASSIGNMENT_SEPARATOR=" " '"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/ SED-ARGS \[\.\.\.\] / /; s/--create-nonexisting\]/& [--add-before|-add-after ADDRESS]/ }'
