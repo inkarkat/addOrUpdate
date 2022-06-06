@@ -3,3 +3,4 @@ foo='bar'
 foo=/initial value/
 fox=
 foy=\\
+foz=existing value
