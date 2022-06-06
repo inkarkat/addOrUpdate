@@ -117,9 +117,10 @@ if [ ! "$ADDORAPPENDASSIGNMENT_NO_APPEND" ]; then
 	# multiple times. To avoid duplicate appends, don't append if the hold
 	# space has content and put a newline into the hold space to signal that
 	# there's already a match.
-	--last-file "${addBeforeAddress:-${addAfterAddress:-${addAfterAddress:-\$}}}{ x; /./{ x; b slurpToEnd }; s/.*/\\n/; x; }"
-	--last-file "1{ \$ { /^\$/s/.*/${literalLine//\//\\/}/; b slurpToEnd } }"
+	--last-file "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /./{ x; b slurpToEnd }; s/.*/\\n/; x; }"
+	--last-file "1{ \${ /^\$/s/.*/${literalLine//\//\\/}/; b slurpToEnd } }"
 	--last-file "${addBeforeAddress:-${addAfterAddress:-\$}a}${addBeforeAddress:+i}\\${NL}${insertableLine}"
+	--last-file b
     )
 fi
 #dump-args -v 2>&3 -- "${sedProgramStart[@]}" "${sedProgramLastFile[@]}" "${sedProgramEnd[@]}"
