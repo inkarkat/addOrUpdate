@@ -72,16 +72,6 @@ isCreateNonexisting=
 typeset -a sedProgram=()
 typeset -a sedLastFileProgram=()
 typeset -a sedInplaceArgs=()
-line=
-acceptMatch=
-updateMatch=
-unset replacement
-unset freshPreLines
-unset freshPostLines
-unset updatePreLines
-unset updatePostLines
-addBeforeAddress=
-addAfterAddress=
 while [ $# -ne 0 ]
 do
     case "$1" in

@@ -29,7 +29,6 @@ fox=hi" ]
 }
 
 @test "update all with nonexisting assignment appends to all files" {
-    UPDATE="foo=new"
     addOrUpdateAssignment --all --in-place --lhs new --rhs add "$FILE" "$FILE2" "$FILE3"
     [ "$(cat "$FILE")" = "$(cat "$INPUT")
 new=add" ]
