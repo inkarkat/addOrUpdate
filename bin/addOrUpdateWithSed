@@ -48,8 +48,9 @@ HELPDESCRIPTION
 			    does not exist yet, (and insert the LINE there).
     --last-file SED-PROGRAM-ARG [...]
 			    Add -e SED-PROGRAM-ARG when the last FILE is
-			    processed (or --all is given). This can be used to
-			    append to the last FILE only.
+			    processed (or --all is given, or a non-existing file
+			    is created). This can be used to append to the last
+			    FILE only.
 
 EXIT STATUS:
     0	An update has happened (with --all: in at least one FILE).
@@ -153,7 +154,7 @@ do
 	if [ "$isTestOnly" ]; then
 	    status=0
 	else
-	    create "$isLastFile" "$filespec"
+	    create t "$filespec"
 	    status=$?
 	fi
 	case $status in
