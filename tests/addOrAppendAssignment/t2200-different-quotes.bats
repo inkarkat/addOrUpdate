@@ -35,3 +35,20 @@ foy=\\\\" ]
     [ "$output" = "$(cat "$INPUT")
 new=/add/" ]
 }
+
+@test "update with backslashes appends to existing value" {
+    ASSIGNMENT_QUOTE=\\ run addOrAppendAssignment --lhs foy --rhs add "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = "foo=\"bar\"
+foo='bar'
+foo=/initial value/
+fox=
+foy=\\add\\" ]
+}
+
+@test "update with nonexisting backslashes appends at the end" {
+    ASSIGNMENT_QUOTE=\\ run addOrAppendAssignment --lhs new --rhs add "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = "$(cat "$INPUT")
+new=\\add\\" ]
+}
