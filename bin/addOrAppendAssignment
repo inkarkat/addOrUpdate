@@ -81,7 +81,8 @@ literalSeparator="${literalSeparator//&/\\&}"
 typeset -a sedProgramStart=(
     -e "/^${literalLhs//\//\\/}=${ASSIGNMENT_QUOTE//\//\\/}\\(.*${ASSIGNMENT_SEPARATOR//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${ASSIGNMENT_SEPARATOR//\//\\/}.*\\)\\?${ASSIGNMENT_QUOTE//\//\\/}\$/{ b slurpToEndAndQuit }"
 
-    -e "s/^\\(${literalLhs//\//\\/}=${ASSIGNMENT_QUOTE//\//\\/}.*\\)\\(${ASSIGNMENT_QUOTE//\//\\/}\\)\$/\\1${literalSeparator//\//\\/}${literalRhs//\//\\/}\\2/; T last; b slurpToEnd"
+    -e "s/^\\(${literalLhs//\//\\/}=${ASSIGNMENT_QUOTE//\//\\/}\\)\\(${ASSIGNMENT_QUOTE//\//\\/}\\)\$/\\1${literalRhs//\//\\/}\\2/; t slurpToEnd"
+    -e "s/^\\(${literalLhs//\//\\/}=${ASSIGNMENT_QUOTE//\//\\/}.*\\)\\(${ASSIGNMENT_QUOTE//\//\\/}\\)\$/\\1${literalSeparator//\//\\/}${literalRhs//\//\\/}\\2/; t slurpToEnd"
     -e ':last'
 )
 typeset -a sedProgramLastFile=()
