@@ -300,7 +300,7 @@ process()
 	    -e "${addBeforeAddress:-$}b slurpToEndAndQuit"
 	)
     fi
-#dump-args -v 2>&3 "${sedProgram[@]}"
+${DEBUG:+dump-args --on-debug addOrUpdateBlock -v -- "${sedProgram[@]}"}
     sed "${sedInplaceArgs[@]}" \
 	"${sedProgram[@]}" \
 	-- "$filespec"

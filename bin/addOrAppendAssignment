@@ -126,5 +126,5 @@ if [ ! "$ADDORAPPENDASSIGNMENT_NO_APPEND" ]; then
 	--last-file b	# Cannot directly jump to :slurpToEnd here, as the "N" would interfere with the pending "a". Process the next line; the check for non-empty hold space will then jump to :slurpToEnd and prevent another potential update of the following line (should that also contain the LHS).
     )
 fi
-#dump-args -v 2>&3 -- "${sedProgramStart[@]}" "${sedProgramLastFile[@]}" "${sedProgramEnd[@]}"
+${DEBUG:+dump-args --on-debug addOrAppendAssignment -v -- "${sedProgramStart[@]}" "${sedProgramLastFile[@]}" "${sedProgramEnd[@]}"}
 exec addOrUpdateWithSed "${sedProgramStart[@]}" "${sedProgramLastFile[@]}" "${sedProgramEnd[@]}" "${addOrUpdateWithSedArgs[@]}" -- "$@"
