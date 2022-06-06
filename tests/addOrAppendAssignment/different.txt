@@ -1,6 +1,6 @@
 foo="bar"
 foo='bar'
-foo=/initial value/
+foo=/initial/value/
 fox=
 foy=\\
-foz=existing value
+foz=existing,value

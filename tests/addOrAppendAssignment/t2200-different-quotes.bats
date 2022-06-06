@@ -7,10 +7,10 @@ load different
     [ $status -eq 0 ]
     [ "$output" = "foo=\"bar\"
 foo='bar add'
-foo=/initial value/
+foo=/initial/value/
 fox=
 foy=\\\\
-foz=existing value" ]
+foz=existing,value" ]
 }
 
 @test "update with nonexisting single quotes appends at the end" {
@@ -25,10 +25,10 @@ new='add'" ]
     [ $status -eq 0 ]
     [ "$output" = "foo=\"bar\"
 foo='bar'
-foo=/initial value add/
+foo=/initial/value add/
 fox=
 foy=\\\\
-foz=existing value" ]
+foz=existing,value" ]
 }
 
 @test "update with nonexisting forward slashes appends at the end" {
@@ -43,10 +43,10 @@ new=/add/" ]
     [ $status -eq 0 ]
     [ "$output" = "foo=\"bar\"
 foo='bar'
-foo=/initial value/
+foo=/initial/value/
 fox=
 foy=\\add\\
-foz=existing value" ]
+foz=existing,value" ]
 }
 
 @test "update with nonexisting backslashes appends at the end" {
@@ -61,10 +61,10 @@ new=\\add\\" ]
     [ $status -eq 0 ]
     [ "$output" = "foo=\"bar\"
 foo='bar'
-foo=/initial value/
+foo=/initial/value/
 fox=
 foy=\\\\
-foz=existing value add" ]
+foz=existing,value add" ]
 }
 
 @test "update with nonexisting empty quotes appends at the end" {

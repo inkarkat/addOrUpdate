@@ -74,6 +74,7 @@ literalRhs="$rhs"
 literalRhs="${literalRhs//\\/\\\\}"
 literalRhs="${literalRhs//&/\\&}"
 literalRhs="${literalRhs//$'\n'/\\n}"
+literalSeparatorPattern="$(printf %s "$ASSIGNMENT_SEPARATOR" | sed -e 's/[][\$*.^]/\\&/g')"
 literalSeparator="$ASSIGNMENT_SEPARATOR"
 literalSeparator="${literalSeparator//\\/\\\\}"
 literalSeparator="${literalSeparator//&/\\&}"
@@ -84,7 +85,7 @@ literalQuote="${literalQuote//&/\\&}"
 
 typeset -a sedProgramStart=(
     -e "{ x; /./{ x; b slurpToEnd }; x }"
-    -e "/^${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\(.*${ASSIGNMENT_SEPARATOR//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${ASSIGNMENT_SEPARATOR//\//\\/}.*\\)\\?${literalQuotePattern//\//\\/}\$/{ b slurpToEndAndQuit }"
+    -e "/^${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\(.*${literalSeparatorPattern//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${literalSeparatorPattern//\//\\/}.*\\)\\?${literalQuotePattern//\//\\/}\$/{ b slurpToEndAndQuit }"
 
     -e "s/^\\(${literalLhs//\//\\/}=\\)\$/\\1${literalQuote//\//\\/}${literalRhs//\//\\/}${literalQuote//\//\\/}/; t slurpToEnd"
     -e "s/^\\(${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalRhs//\//\\/}\\2/; t slurpToEnd"
