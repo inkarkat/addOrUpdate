@@ -119,7 +119,7 @@ if [ ! "$ADDORAPPENDASSIGNMENT_NO_APPEND" ]; then
 	# space has content and put a newline into the hold space to signal that
 	# there's already a match.
 	--last-file "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /./{ x; b slurpToEnd }; s/.*/\\n/; x; }"
-	--last-file "1{ \${ /^\$/s/.*/${literalLine//\//\\/}/; b slurpToEnd } }"
+	--last-file "1{ \${ /^\$/{ s/.*/${literalLine//\//\\/}/; b slurpToEnd } } }"
 	--last-file "${addBeforeAddress:-${addAfterAddress:-\$}a}${addBeforeAddress:+i}\\${NL}${insertableLine}"
 	--last-file b	# Cannot directly jump to :slurpToEnd here, as the "N" would interfere with the pending "a". Process the next line; the check for non-empty hold space will then jump to :slurpToEnd and prevent another potential update of the following line (should that also contain the LHS).
     )
