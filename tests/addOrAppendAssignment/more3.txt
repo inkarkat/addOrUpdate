@@ -1,2 +1,3 @@
 zulu="here and there"
+foo="bar"
 foo="no bar baz"
