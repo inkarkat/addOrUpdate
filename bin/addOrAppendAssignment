@@ -1,0 +1,130 @@
+#!/bin/bash
+
+: ${ASSIGNMENT_QUOTE=\"}
+: ${ASSIGNMENT_SEPARATOR=' '}
+
+typeset -a usageOverrideArgs=(
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateWithSed /\1\2ASSIGNMENT_QUOTE=\\" ASSIGNMENT_SEPARATOR=" " '"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/ SED-ARGS \[\.\.\.\] / /; s/--create-nonexisting\]/& [--add-before|-add-after ADDRESS]/ }'
+)
+printUsage()
+{
+    addOrUpdateWithSed 2>&1 | sed \
+	-e '/^ERROR: No SED-ARGS passed\./{ N; s/\n$//; D; }' \
+	"${usageOverrideArgs[@]}" \
+	-e "/Try addOrUpdateWithSed --help for more information./s/addOrUpdateWithSed/$(basename "$1")/"
+}
+printLongUsage()
+{
+    addOrUpdateWithSed --help 2>&1 | sed \
+	-e '1s#^.*$#Tries to locate an assignment in the form ASSIGNEE="..." in at least one (all with --all) of the passed FILE(s), and updates it so that VALUE gets appended (separated from existing value(s) with a space, in the first file to match, and only the first such matching assignment there), or appends ASSIGNEE="VALUE" (at the end of the last FILE) if such assignment does not exist yet.#' \
+	-e '2b removeFirstParagraphLoop' \
+	-e 's/LINE/assignment/g' \
+	-e "/^ *--in-place/i\\
+    --lhs|-l ASSIGNEE	    Locate the first line that has ASSIGNEE=\"...\"\\
+    --rhs|-r VALUE	    Append space and VALUE after the original value.' \\
+    --add-before ADDRESS    Insert the update at ADDRESS instead of at the end\\
+			    of the FILE. Any existing assignments that follow\\
+			    that line won't be considered!\\
+    --add-after ADDRESS	    Do the update after ADDRESS instead of at the end of\\
+			    the FILE. Any existing assignments that follow that\\
+			    line won't be considered!" \
+	"${usageOverrideArgs[@]}" \
+	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateWithSed .*/\1\2'"$(basename "$1") -l 'export FOO' -r quux .bashrc/ }" \
+	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }'
+}
+
+unset lhs
+unset rhs
+addBeforeAddress=
+addAfterAddress=
+typeset -a addOrUpdateWithSedArgs=()
+while [ $# -ne 0 ]
+do
+    case "$1" in
+	--help|-h|-\?)	shift; printLongUsage "$0"; exit 0;;
+	--lhs|-l)	shift; lhs="$1"; shift;;
+	--rhs|-r)	shift; rhs="$1"; shift;;
+	--add-before)	shift; addBeforeAddress="$1"; shift;;
+	--add-after)	shift; addAfterAddress="$1"; shift;;
+	--in-place|--in-place=*|-i*|--test-only|-t|--all|--ignore-nonexisting|--create-nonexisting)
+			addOrUpdateWithSedArgs+=("$1"); shift;;
+	--)		shift; break;;
+	*)		break;;
+    esac
+done
+if [ -z "${lhs+t}" -o -z "${rhs+t}" ]; then
+    echo 'ERROR: Both -l|--lhs ASSIGNEE and -r|--rhs VALUE must be passed.'
+    echo
+    printUsage "$0"
+    exit 2
+elif [ -z "$lhs" ]; then
+    echo 'ERROR: ASSIGNEE cannot be empty.'
+    echo
+    printUsage "$0"
+    exit 2
+elif [ -n "$addBeforeAddress" -a -n "$addAfterAddress" ]; then
+    echo 'ERROR: Cannot combine --add-before and --add-after.'
+    echo
+    printUsage "$0"
+    exit 2
+fi >&2
+
+literalLhs="$(printf %s "$lhs" | sed -e 's/[][\$*.^]/\\&/g')"
+literalRhs="$rhs"
+literalRhs="${literalRhs//\\/\\\\}"
+literalRhs="${literalRhs//&/\\&}"
+literalRhs="${literalRhs//$'\n'/\\n}"
+literalSeparatorPattern="$(printf %s "$ASSIGNMENT_SEPARATOR" | sed -e 's/[][\$*.^]/\\&/g')"
+literalSeparator="$ASSIGNMENT_SEPARATOR"
+literalSeparator="${literalSeparator//\\/\\\\}"
+literalSeparator="${literalSeparator//&/\\&}"
+literalQuotePattern="$(printf %s "$ASSIGNMENT_QUOTE" | sed -e 's/[][\$*.^]/\\&/g')"
+literalQuote="$ASSIGNMENT_QUOTE"
+literalQuote="${literalQuote//\\/\\\\}"
+literalQuote="${literalQuote//&/\\&}"
+
+typeset -a sedProgramStart=(
+    -e "{ x; /./{ x; b slurpToEnd }; x }"
+    -e "/^${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\(.*${literalSeparatorPattern//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${literalSeparatorPattern//\//\\/}.*\\)\\?${literalQuotePattern//\//\\/}\$/{ b slurpToEndAndQuit }"
+
+    -e "s/^\\(${literalLhs//\//\\/}=\\)\$/\\1${literalQuote//\//\\/}${literalRhs//\//\\/}${literalQuote//\//\\/}/; t slurpToEnd"
+    -e "s/^\\(${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalRhs//\//\\/}\\2/; t slurpToEnd"
+    -e "s/^\\(${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}.*\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalSeparator//\//\\/}${literalRhs//\//\\/}\\2/; t slurpToEnd"
+    -e ':last'
+)
+typeset -a sedProgramLastFile=()
+typeset -a sedProgramEnd=(
+    -e "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /^$/{ x; b slurpToEndAndQuit }; x; b slurpToEnd }"
+    -e 'b'
+
+    -e ':slurpToEnd'
+    -e '$!{ N; P; s/^[^\n]*\n//; b slurpToEnd }'
+    -e 'b'
+
+    -e ':slurpToEndAndQuit'
+    -e '$!{ N; P; s/^[^\n]*\n//; b slurpToEndAndQuit }'
+    -e '$q 99'
+)
+
+if [ ! "$ADDORAPPENDASSIGNMENT_NO_APPEND" ]; then
+    readonly NL=$'\n'
+    line="${lhs}=${ASSIGNMENT_QUOTE}${rhs}${ASSIGNMENT_QUOTE}"
+    insertableLine="${line//\\/\\\\}"
+    insertableLine="${insertableLine//${NL}/\\${NL}}"
+    literalLine="$line"
+    literalLine="${literalLine//\\/\\\\}"
+    literalLine="${literalLine//&/\\&}"
+    literalLine="${literalLine//$'\n'/\\n}"
+    sedProgramLastFile=(
+	# $addBeforeAddress / $addAfterAddress may be a pattern that matches
+	# multiple times. To avoid duplicate appends, don't append if the hold
+	# space has content and put a newline into the hold space to signal that
+	# there's already a match.
+	--last-file "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /./{ x; b slurpToEnd }; s/.*/\\n/; x; }"
+	--last-file "1{ \${ /^\$/{ s/.*/${literalLine//\//\\/}/; b slurpToEnd } } }"
+	--last-file "${addBeforeAddress:-${addAfterAddress:-\$}a}${addBeforeAddress:+i}\\${NL}${insertableLine}"
+	--last-file b	# Cannot directly jump to :slurpToEnd here, as the "N" would interfere with the pending "a". Process the next line; the check for non-empty hold space will then jump to :slurpToEnd and prevent another potential update of the following line (should that also contain the LHS).
+    )
+fi
+#dump-args -v 2>&3 -- "${sedProgramStart[@]}" "${sedProgramLastFile[@]}" "${sedProgramEnd[@]}"
+exec addOrUpdateWithSed "${sedProgramStart[@]}" "${sedProgramLastFile[@]}" "${sedProgramEnd[@]}" "${addOrUpdateWithSedArgs[@]}" -- "$@"
