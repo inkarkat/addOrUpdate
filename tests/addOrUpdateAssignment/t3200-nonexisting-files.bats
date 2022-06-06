@@ -17,11 +17,11 @@ new=add" ]
 }
 
 @test "update in first existing file skips nonexisting files" {
-    run addOrUpdateAssignment --in-place --lhs new --rhs add --update-match "foo=bar" "$NONE" "$FILE" "$NONE2" "$FILE2"
+    run addOrUpdateAssignment --in-place --lhs foo --rhs add "$NONE" "$FILE" "$NONE2" "$FILE2"
     [ $status -eq 0 ]
     [ "$output" = "" ]
     [ "$(cat "$FILE")" = "sing/e=wha\\ever
-new=add
+foo=add
 foo=hoo bar baz
 # SECTION
 fox=hi" ]
@@ -31,7 +31,7 @@ fox=hi" ]
 }
 
 @test "all nonexisting files returns 4" {
-    run addOrUpdateAssignment --in-place --lhs new --rhs add --update-match "foo=bar" "$NONE" "$NONE2"
+    run addOrUpdateAssignment --in-place --lhs new --rhs add "$NONE" "$NONE2"
     [ $status -eq 4 ]
     [ "$output" = "" ]
     [ ! -e "$NONE" ]
