@@ -133,8 +133,8 @@ do
 	--accept-match|-a)  shift; acceptMatch="$1"; shift;;
 	--update-match|-u)  shift; updateMatch="$1"; shift;;
 	--replacement|-r)   shift; replacement="${1//${NL}/\\n}"; shift;;
-	--pre-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPreLines+="${freshPreLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
-	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPostLines+="${freshPostLines:+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
+	--pre-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPreLines+="${freshPreLines+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
+	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPostLines+="${freshPostLines+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
 	--pre-update)	    shift; updatePreLines+="${updatePreLines:+\\n}$(literalReplacement "$1")"; shift;;
 	--post-update)	    shift; updatePostLines+="${updatePostLines:+\\n}$(literalReplacement "$1")"; shift;;
 	--add-before)	    shift; addBeforeAddress="$1"; shift;;

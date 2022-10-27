@@ -52,6 +52,26 @@ $UPDATE" ]
 $UPDATE" ]
 }
 
+@test "empty and non-empty pre lines" {
+    UPDATE="foo=new"
+    run addOrUpdateLine --pre-line '' --pre-line "$PRELINE" --line "$UPDATE" "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = "$(cat "$INPUT")
+
+$PRELINE
+$UPDATE" ]
+}
+
+@test "non-empty and empty pre lines" {
+    UPDATE="foo=new"
+    run addOrUpdateLine --pre-line "$PRELINE" --pre-line '' --line "$UPDATE" "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = "$(cat "$INPUT")
+$PRELINE
+
+$UPDATE" ]
+}
+
 @test "single space pre line" {
     PRELINE=" "
     UPDATE="foo=new"

@@ -47,12 +47,35 @@ addOrUpdateLineWithPeriod()
 {
     addOrUpdateLine "$@"; printf .
 }
+
 @test "empty post line" {
     UPDATE="foo=new"
     run addOrUpdateLineWithPeriod --post-line '' --line "$UPDATE" "$FILE"
     [ $status -eq 0 ]
     [ "${output}" = "$(cat "$INPUT")
 $UPDATE
+
+." ]
+}
+
+@test "empty and non-empty post lines" {
+    UPDATE="foo=new"
+    run addOrUpdateLineWithPeriod --post-line '' --post-line "$POSTLINE" --line "$UPDATE" "$FILE"
+    [ $status -eq 0 ]
+    [ "${output}" = "$(cat "$INPUT")
+$UPDATE
+
+$POSTLINE
+." ]
+}
+
+@test "non-empty and empty post lines" {
+    UPDATE="foo=new"
+    run addOrUpdateLineWithPeriod --post-line "$POSTLINE" --post-line '' --line "$UPDATE" "$FILE"
+    [ $status -eq 0 ]
+    [ "${output}" = "$(cat "$INPUT")
+$UPDATE
+$POSTLINE
 
 ." ]
 }
