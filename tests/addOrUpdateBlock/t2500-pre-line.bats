@@ -48,6 +48,24 @@ $BLOCK" ]
 $BLOCK" ]
 }
 
+@test "empty and non-empty pre lines" {
+    run addOrUpdateBlock --pre-line '' --pre-line "$PRELINE" --marker test --block-text "$TEXT" "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = "$(cat "$FRESH")
+
+$PRELINE
+$BLOCK" ]
+}
+
+@test "non-empty and empty pre lines" {
+    run addOrUpdateBlock --pre-line "$PRELINE" --pre-line '' --marker test --block-text "$TEXT" "$FILE"
+    [ $status -eq 0 ]
+    [ "$output" = "$(cat "$FRESH")
+$PRELINE
+
+$BLOCK" ]
+}
+
 @test "single space pre line" {
     PRELINE=" "
     run addOrUpdateBlock --pre-line "$PRELINE" --marker test --block-text "$TEXT" "$FILE"

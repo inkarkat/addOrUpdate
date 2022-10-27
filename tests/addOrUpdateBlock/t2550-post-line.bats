@@ -44,11 +44,32 @@ addOrUpdateLineWithPeriod()
 {
     addOrUpdateBlock "$@"; printf .
 }
+
 @test "empty post line" {
     run addOrUpdateLineWithPeriod --post-line '' --marker test --block-text "$TEXT" "$FILE"
     [ $status -eq 0 ]
     [ "${output}" = "$(cat "$FRESH")
 $BLOCK
+
+." ]
+}
+
+@test "empty and non-empty post lines" {
+    run addOrUpdateLineWithPeriod --post-line '' --post-line "$POSTLINE" --marker test --block-text "$TEXT" "$FILE"
+    [ $status -eq 0 ]
+    [ "${output}" = "$(cat "$FRESH")
+$BLOCK
+
+$POSTLINE
+." ]
+}
+
+@test "non-empty and empty post lines" {
+    run addOrUpdateLineWithPeriod --post-line "$POSTLINE" --post-line '' --marker test --block-text "$TEXT" "$FILE"
+    [ $status -eq 0 ]
+    [ "${output}" = "$(cat "$FRESH")
+$BLOCK
+$POSTLINE
 
 ." ]
 }
