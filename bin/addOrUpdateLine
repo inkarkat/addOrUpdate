@@ -81,10 +81,10 @@ HELPDESCRIPTION
 			    (This is assumed to be for comments or headers that
 			    would already be there.)
     --post-line POSTTEXT    When a fresh LINE is added, put POSTTEXT after it.
-    --pre-update PRETEXT    When an existing LINE is updated, put PRETEXT before
-			    it.
-    --post-update POSTTEXT  When an existing LINE is updated, put POSTTEXT after
-			    it.
+    --pre-update PRETEXT    When an existing LINE is updated, put PRETEXT
+			    before it.
+    --post-update POSTTEXT  When an existing LINE is updated, put POSTTEXT
+			    after it.
 
 All PATTERNs are sed-style basic regular expressions; ADDRESS a sed address.
 
