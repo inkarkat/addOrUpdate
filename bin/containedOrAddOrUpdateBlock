@@ -4,7 +4,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-y|--yes] [-g|--memoize-group GROUP] [--name NAME] [-N|--needs-update-message MSG] [-M|--up-to-date-message] [--what WHAT] [-i[SUFFIX]|--in-place[=SUFFIX]] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS] -m|-marker WHAT|(--begin-marker BEGIN-LINE --end-marker END-LINE) -b|--block-text BLOCK-TEXT|-B|--block-file BLOCK-FILE [...] [-a|--accept-match ACCEPT-PATTERN] [--pre-line PRETEXT [--pre-line ...]|--post-line POSTTEXT [--post-line ...]]] [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-y|--yes] [-g|--memoize-group GROUP] [--name NAME] [-N|--needs-update-message MSG] [-M|--up-to-date-message] [--what WHAT] [-i[SUFFIX]|--in-place[=SUFFIX]] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS] -m|-marker WHAT|(--begin-marker BEGIN-LINE --end-marker END-LINE) -b|--block-text BLOCK-TEXT|-B|--block-file BLOCK-FILE [...] [-a|--accept-match ACCEPT-PATTERN] [--pre-line PRETEXT [--pre-line ...]|--post-line POSTTEXT [--post-line ...]]] [--] [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
