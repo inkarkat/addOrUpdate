@@ -82,12 +82,12 @@ All PATTERNs are sed-style basic regular expressions; ADDRESS a sed address.
 
 EXIT STATUS:
     0	An update has happened (with --all: in at least one FILE).
-    1	The BLOCK already existed, no modifications were made.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
     4	None of the passed FILE(s) exist; no modifications could be made.
     5	A FILE could not be created / modified (due to problems with sed).
     6	The BLOCK-FILE cannot be read.
+    99	The BLOCK already existed, no modifications were made.
 
 Example:
 HELPTEXT
@@ -233,9 +233,13 @@ process()
 	-e '$!{ N; P; s/^[^\n]*\n//; b slurpToEnd }'
 	-e 'b'
 
-	-e ':slurpToEndAndQuit'
-	-e '$!{ N; b slurpToEndAndQuit }'
+	-e ':slurpToEndAndError'
+	-e '$!{ N; b slurpToEndAndError }'
 	-e '$q 98'
+
+	-e ':slurpToEndAndNoop'
+	-e '$!{ N; b slurpToEndAndNoop }'
+	-e '$q 99'
 
 	-e ':searchForEnd'
 	# Another begin marker resets the search.
@@ -255,12 +259,12 @@ process()
 	# At the add-before address and if we need to signal "no change", if this
 	# is before the last line, join with the next line, remove the first
 	# line (effectively emulating "d" but staying in the current cycle), and
-	# then also jump to :slurpToEndAndQuit. On the last line, use the GNU
+	# then also jump to :slurpToEndAndNoop. On the last line, use the GNU
 	# sed "Q" to quit with the special exit status while suppressing the
 	# current line.
 	# At the add-before address and if we don't need to signal "no change",
 	# simply "d" now as well.
-	-e "${addBeforeAddress:-\$}{ x; /^\\n\$\\|^${literalBlockTextPattern//\//\\/}\\n${literalEndMarkerPattern//\//\\/}\$/{ x; \$! { N; s/^[^\\n]*\\n//; b slurpToEndAndQuit }; Q 98 }; x; d; }"
+	-e "${addBeforeAddress:-\$}{ x; /^\\n\$\\|^${literalBlockTextPattern//\//\\/}\\n${literalEndMarkerPattern//\//\\/}\$/{ x; \$! { N; s/^[^\\n]*\\n//; b slurpToEndAndNoop }; Q 99 }; x; d; }"
     )
 
     sedProgram+=(
@@ -269,7 +273,7 @@ process()
 	# new block, no processing actually has happened, and we indicate an
 	# error. If the hold space isn't empty, skip further processing (i.e.
 	# appending), as we've already done the update.
-	-e "${addBeforeAddress:-\$}{ x; /^\\n\$\\|^${literalBlockTextPattern//\//\\/}\\n${literalEndMarkerPattern//\//\\/}\$/{ x; b slurpToEndAndQuit }; /./{ x; b; }; x; }"
+	-e "${addBeforeAddress:-\$}{ x; /^\\n\$\\|^${literalBlockTextPattern//\//\\/}\\n${literalEndMarkerPattern//\//\\/}\$/{ x; b slurpToEndAndNoop }; /./{ x; b; }; x; }"
     )
 
     if [ "$isAppend" ]; then
@@ -297,7 +301,7 @@ process()
     else
 	sedProgram+=(
 	    # Indicate no update via special exit status.
-	    -e "${addBeforeAddress:-$}b slurpToEndAndQuit"
+	    -e "${addBeforeAddress:-$}b slurpToEndAndError"
 	)
     fi
 ${DEBUG:+dump-args --on-debug addOrUpdateBlock -v -- "${sedProgram[@]}"}
@@ -336,7 +340,8 @@ do
     status=$?
     case $status in
 	0)	[ "$isAll" ] && hadSuccess=t || exit $status;;
-	98|99)	status=1;;
+	98)	status=1;;
+	99)	status=99;;
 	*)	status=5;;
     esac
 done

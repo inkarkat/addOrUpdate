@@ -83,9 +83,9 @@ single-line
 # END final and empty" ]
 }
 
-@test "update all with existing block in all files keeps contents and returns 1" {
+@test "update all with existing block in all files keeps contents and returns 99" {
     run addOrUpdateBlock --all --in-place --marker subsequent --block-text "Single line" "$FILE2" "$FILE4"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     cmp "$FILE2" "$EXISTING"
     cmp "$FILE4" "$LAST"
 }

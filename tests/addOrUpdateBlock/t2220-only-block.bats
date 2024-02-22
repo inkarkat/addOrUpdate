@@ -2,29 +2,29 @@
 
 load temp
 
-@test "update of file containing only the identical block returns 1" {
+@test "update of file containing only the identical block returns 99" {
     run addOrUpdateBlock --marker test --block-text "$TEXT" "${BATS_TEST_DIRNAME}/only-block.txt"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "${BATS_TEST_DIRNAME}/only-block.txt")" ]
 }
 
-@test "in-place update of file containing only the identical block returns 1" {
+@test "in-place update of file containing only the identical block returns 99" {
     cp "${BATS_TEST_DIRNAME}/only-block.txt" "$NONE"
     run addOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$NONE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "${BATS_TEST_DIRNAME}/only-block.txt" "$NONE"
 }
 
-@test "update of file with the identical block ending on the add-before line returns 1" {
+@test "update of file with the identical block ending on the add-before line returns 99" {
     run addOrUpdateBlock --marker test --block-text 'Final testing' --add-before 4 "$FILE4"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$LAST")" ]
 }
 
-@test "in-place update of file with the identical block ending on the add-before line returns 1" {
+@test "in-place update of file with the identical block ending on the add-before line returns 99" {
     run addOrUpdateBlock --in-place --marker test --block-text 'Final testing' --add-before 4 "$FILE4"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "$LAST" "$FILE4"
 }
