@@ -50,12 +50,12 @@ HELPDESCRIPTION
 			    already existed and no modifications were made.
 EXIT STATUS:
     0	An update has happened (with --all: in at least one FILE).
-    1	The BLOCK already existed, no modifications were made.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
     4	None of the passed FILE(s) exist; no modifications could be made.
     5	A FILE could not be created / modified (due to problems with sed).
     6	The BLOCK-FILE cannot be read.
+    98	The BLOCK already existed, no modifications were made.
     99	Update was declined by the user.
 
 Example:
@@ -141,13 +141,15 @@ case $? in
 	    exit 0
 	fi
 	;;
-    1|99)
-	if [ -z "${upToDateMessage+t}" ]; then
-	    printf >&2 "%s%s already %s %s; no update %snecessary.\\n" "${name:-$subject}" "${ADDORUPDATEBLOCK_NO_APPEND:+ ${verb} have or}" "$negativeVerb" "${what:-${markerName:-the block}}" "${ADDORUPDATEBLOCK_NO_APPEND:+possible / }"
-	elif [ -n "$upToDateMessage" ]; then
-	    printf >&2 "%s\n" "$upToDateMessage"
-	fi
+    1)	printf >&2 '%s %s have %s; no update possible.\n' "${name:-$subject}" "$verb" "${what:-${markerName:-the block}}"
 	exit 1
+	;;
+    99)	if [ -z "${upToDateMessage+t}" ]; then
+	    printf >&2 '%s already %s %s; no update necessary.\n' "${name:-$subject}" "$negativeVerb" "${what:-${markerName:-the block}}"
+	elif [ -n "$upToDateMessage" ]; then
+	    printf >&2 '%s\n' "$upToDateMessage"
+	fi
+	exit 98
 	;;
     *)	exit $?;;
 esac

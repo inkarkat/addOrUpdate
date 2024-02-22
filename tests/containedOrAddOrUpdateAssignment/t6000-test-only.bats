@@ -2,10 +2,10 @@
 
 load temp
 
-@test "returns 1 and error message and does not modify the file when testing if the file already contains the line" {
+@test "returns 98 and error message and does not modify the file when testing if the file already contains the line" {
     init
     run containedOrAddOrUpdateAssignment --test-only --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 98 ]
     [ "$output" = "$FILE already contains 'foo=bar'; no update necessary." ]
     cmp -- "$INPUT" "$FILE"
 }

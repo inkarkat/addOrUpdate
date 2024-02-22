@@ -8,25 +8,25 @@ pipedContainedOrAddOrUpdateLine()
     printf '%s\n' "$input" | containedOrAddOrUpdateLine "$@"
 }
 
-@test "returns 1 and no output if implicit stdin already contains the line" {
+@test "returns 98 and no output if implicit stdin already contains the line" {
     init
     INPUT="SOME line
 foo=bar
 more"
     export MEMOIZEDECISION_CHOICE=n
     run pipedContainedOrAddOrUpdateLine "$INPUT" --line "foo=bar"
-    [ $status -eq 1 ]
+    [ $status -eq 98 ]
     [[ "$output" =~ " already contains 'foo=bar'; no update necessary."$ ]]
 }
 
-@test "returns 1 and no output if stdin as - already contains the line" {
+@test "returns 98 and no output if stdin as - already contains the line" {
     init
     INPUT="Some line
 foo=bar
 more"
     export MEMOIZEDECISION_CHOICE=n
     run pipedContainedOrAddOrUpdateLine "$INPUT" --line "foo=bar" -
-    [ $status -eq 1 ]
+    [ $status -eq 98 ]
     [[ "$output" =~ " already contains 'foo=bar'; no update necessary."$ ]]
 }
 
