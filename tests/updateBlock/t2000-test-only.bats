@@ -16,9 +16,9 @@ load temp
     cmp "$FILE" "$FRESH"
 }
 
-@test "test-only update with existing marker and same single-line block returns 1" {
+@test "test-only update with existing marker and same single-line block returns 99" {
     run updateBlock --test-only --marker subsequent --block-text "Single line" "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "$FILE2" "$EXISTING"
 }
@@ -30,9 +30,9 @@ load temp
     cmp "$FILE2" "$EXISTING"
 }
 
-@test "test-only update with existing marker and same multi-line block returns 1" {
+@test "test-only update with existing marker and same multi-line block returns 99" {
     run updateBlock --test-only --marker test --block-text $'The original comment\nis this one.' "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "$FILE2" "$EXISTING"
 }

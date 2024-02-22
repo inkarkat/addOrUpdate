@@ -40,7 +40,7 @@ foo=hi" ]
 
 @test "update with existing line on the passed line keeps contents and returns 1" {
     run addOrUpdateLine --line "foo=bar" --add-before 2 "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 

@@ -35,9 +35,9 @@ foo="hoo bar baz"
 fox="hi there"' ]
 }
 
-@test "update with existing assignment on the passed line keeps contents and returns 1" {
+@test "update with existing assignment on the passed line keeps contents and returns 99" {
     run addOrAppendAssignment --lhs foo --rhs bar --add-before 2 "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 

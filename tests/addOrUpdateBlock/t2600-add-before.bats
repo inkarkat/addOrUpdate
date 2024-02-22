@@ -106,14 +106,14 @@ Somehoe
 last line" ]
 }
 
-@test "update with existing block before an empty line keeps contents and returns 1" {
+@test "update with existing block before an empty line keeps contents and returns 99" {
     run addOrUpdateBlock --marker subsequent --block-text "Single line" --add-before '/^$/' "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$EXISTING")" ]
 }
 
-@test "update with existing marker and same multi-line block after the passed line keeps contents and returns 1" {
+@test "update with existing marker and same multi-line block after the passed line keeps contents and returns 99" {
     run addOrUpdateBlock --marker test --block-text $'The original comment\nis this one.' --add-before 12 "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$EXISTING")" ]
 }

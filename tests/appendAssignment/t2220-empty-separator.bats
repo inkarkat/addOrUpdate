@@ -15,7 +15,7 @@ foz=existing,value" ]
 
 @test "update with empty separator matches inside existing value" {
     ASSIGNMENT_SEPARATOR= run appendAssignment --lhs foo --rhs a "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     cmp "$INPUT" "$FILE"
 }
 

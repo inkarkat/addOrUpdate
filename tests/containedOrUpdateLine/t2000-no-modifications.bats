@@ -6,12 +6,12 @@ load temp
     init
     run containedOrUpdateLine --in-place --update-match nowhereToBeFound --replacement "foo=bar" "$FILE"
     [ $status -eq 1 ]
-    [ "$output" = "$FILE does not match or already contains 'foo=bar'; no update possible / necessary." ]
+    [ "$output" = "$FILE does not match; no update possible." ]
 }
 
-@test "returns 1 and error message if the file already contains the line" {
+@test "returns 98 and error message if the file already contains the line" {
     init
     run containedOrUpdateLine --in-place --update-match "foo=bar" --replacement "foo=bar" "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$FILE does not match or already contains 'foo=bar'; no update possible / necessary." ]
+    [ $status -eq 98 ]
+    [ "$output" = "$FILE already contains 'foo=bar'; no update necessary." ]
 }

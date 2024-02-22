@@ -28,9 +28,9 @@ foo=bar
 foo=no bar baz" ]
 }
 
-@test "update all with no modification in all files keeps contents and returns 1" {
+@test "update all with no modification in all files keeps contents and returns 99" {
     run addOrUpdateWithSed --all --in-place $SED_NO_MOD -- "$FILE" "$FILE2" "$FILE3"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     cmp "$FILE" "$INPUT"
     cmp "$FILE2" "$MORE2"
     cmp "$FILE3" "$MORE3"

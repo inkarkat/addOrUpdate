@@ -12,36 +12,36 @@ load temp
     init
     run containedOrUpdateAssignment --in-place --lhs "nowhereToBeFound" --rhs bar "$FILE"
     [ $status -eq 1 ]
-    [ "$output" = "$FILE does not match or already contains 'nowhereToBeFound=bar'; no update possible / necessary." ]
+    [ "$output" = "$FILE does not match; no update possible." ]
 }
 
-@test "returns 1 and error message if the file already contains the assignment" {
+@test "returns 98 and error message if the file already contains the assignment" {
     init
     run containedOrUpdateAssignment --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$FILE does not match or already contains 'foo=bar'; no update possible / necessary." ]
+    [ $status -eq 98 ]
+    [ "$output" = "$FILE already contains 'foo=bar'; no update necessary." ]
 }
 
-@test "returns 1 and error message mentioning the name if the file already contains the assignment" {
+@test "returns 98 and error message mentioning the name if the file already contains the assignment" {
     init
     NAME="My test file"
     run containedOrUpdateAssignment --in-place --name "$NAME" --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$NAME does not match or already contains 'foo=bar'; no update possible / necessary." ]
+    [ $status -eq 98 ]
+    [ "$output" = "$NAME already contains 'foo=bar'; no update necessary." ]
 }
 
-@test "returns 1 and no error message with an empty one passed if the file already contains the assignment" {
+@test "returns 98 and no error message with an empty one passed if the file already contains the assignment" {
     init
     run containedOrUpdateAssignment --up-to-date-message '' --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 98 ]
     [ "$output" = "" ]
 }
 
-@test "returns 1 and a custom passed message if the file already contains the assignment" {
+@test "returns 98 and a custom passed message if the file already contains the assignment" {
     init
     MESSAGE='The file already has the bar.'
     run containedOrUpdateAssignment --up-to-date-message "$MESSAGE" --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 98 ]
     [ "$output" = "$MESSAGE" ]
 }
 

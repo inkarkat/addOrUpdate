@@ -10,6 +10,7 @@ export NONE="${BATS_TMPDIR}/none.txt"
 export NONE2="${BATS_TMPDIR}/none2.txt"
 
 export SED_UPDATE='-e 1s/.*/updated/'
+export SED_ERROR='-e $q98'
 export SED_NO_MOD='-e $q99'
 
 setup()

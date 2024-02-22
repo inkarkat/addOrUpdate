@@ -57,6 +57,6 @@ foo=hi' ]
 @test "update with line where REPLACEMENT updates the line to the original content indicates no change" {
     run updateLine --line "foo=new" --update-match '^foo=h.*$' --replacement "foo=hoo bar baz" "$FILE"
 
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }

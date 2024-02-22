@@ -8,9 +8,9 @@ load temp
     [ "$output" = "$(cat "$FRESH")" ]
 }
 
-@test "update with existing marker and same single-line block keeps contents and returns 1" {
+@test "update with existing marker and same single-line block keeps contents and returns 99" {
     run updateBlock --marker subsequent --block-text "Single line" "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$EXISTING")" ]
 }
 
@@ -40,9 +40,9 @@ Somehoe
 last line" ]
 }
 
-@test "update with existing marker and same multi-line block keeps contents and returns 1" {
+@test "update with existing marker and same multi-line block keeps contents and returns 99" {
     run updateBlock --marker test --block-text $'The original comment\nis this one.' "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$EXISTING")" ]
 }
 

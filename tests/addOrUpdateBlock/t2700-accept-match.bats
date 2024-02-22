@@ -27,9 +27,9 @@ Somehoe
 last line" ]
 }
 
-@test "update with existing marker and literal-like matching accept pattern keeps contents and returns 1" {
+@test "update with existing marker and literal-like matching accept pattern keeps contents and returns 99" {
     run addOrUpdateBlock --marker test --accept-match third --block-text "$TEXT" "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$EXISTING")" ]
 }
 
@@ -58,8 +58,8 @@ Somehoe
 last line" ]
 }
 
-@test "update with existing marker and anchored matching accept pattern keeps contents and returns 1" {
+@test "update with existing marker and anchored matching accept pattern keeps contents and returns 99" {
     run addOrUpdateBlock --marker test --accept-match '^\(second\|third\) line$' --block-text "$TEXT" "$FILE2"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$EXISTING")" ]
 }
