@@ -49,8 +49,8 @@ EXIT STATUS:
     3	Internal error or failed assertion.
     4	None of the passed FILE(s) exist; no modifications could be made.
     5	A FILE could not be created / modified (due to problems with sed).
-    98	The LINE already existed, no modifications were made.
-    99	Update was declined by the user.
+    98	Update was declined by the user.
+    99	The LINE already existed, no modifications were made.
 
 Example:
 HELPTEXT
@@ -145,7 +145,7 @@ case $? in
 	elif [ -n "$upToDateMessage" ]; then
 	    printf >&2 '%s\n' "$upToDateMessage"
 	fi
-	exit 98
+	exit 99
 	;;
     *)	exit $?;;
 esac
@@ -156,6 +156,6 @@ ${MEMOIZEDECISION:-memoizeDecision} "${memoizeDecisionArgs[@]}" --subject "${nam
 status=$?
 case $status in
     0)	exec addOrUpdateLine "${addOrUpdateLineInplaceArg[@]}" "${addOrUpdateLineArgs[@]}" "$@";;
-    1)	exit 99;;
+    1)	exit 98;;
     *)	exit $status;;
 esac

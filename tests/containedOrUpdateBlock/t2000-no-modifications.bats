@@ -8,8 +8,8 @@ load temp
     [ "$output" = "$FILE2 does not have nowhereToBeFound; no update possible." ]
 }
 
-@test "returns 98 and error message if the file already contains the block" {
+@test "returns 99 and error message if the file already contains the block" {
     run containedOrUpdateBlock --in-place --marker subsequent --block-text "Single line" "$FILE2"
-    [ $status -eq 98 ]
+    [ $status -eq 99 ]
     [ "$output" = "$FILE2 already contains subsequent; no update necessary." ]
 }

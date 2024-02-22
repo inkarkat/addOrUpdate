@@ -2,9 +2,9 @@
 
 load temp
 
-@test "returns 98 and error message and does not modify the file when testing if the file already contains the block" {
+@test "returns 99 and error message and does not modify the file when testing if the file already contains the block" {
     run containedOrAddOrUpdateBlock --test-only --in-place --marker subsequent --block-text "Single line" "$FILE2"
-    [ $status -eq 98 ]
+    [ $status -eq 99 ]
     [ "$output" = "$FILE2 already contains subsequent; no update necessary." ]
     cmp -- "$EXISTING" "$FILE2"
 }

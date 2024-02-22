@@ -8,24 +8,24 @@ pipedContainedOrAddOrUpdateBlock()
     printf '%s\n' "$input" | containedOrAddOrUpdateBlock "$@"
 }
 
-@test "returns 98 and no output if implicit stdin already contains the block" {
+@test "returns 99 and no output if implicit stdin already contains the block" {
     export MEMOIZEDECISION_CHOICE=n
     run pipedContainedOrAddOrUpdateBlock "$BLOCK" --marker test --block-text "$TEXT"
-    [ $status -eq 98 ]
+    [ $status -eq 99 ]
     [[ "$output" =~ " already contains test; no update necessary."$ ]]
 }
 
-@test "returns 98 and no output if stdin as - already contains the block" {
+@test "returns 99 and no output if stdin as - already contains the block" {
     export MEMOIZEDECISION_CHOICE=n
     run pipedContainedOrAddOrUpdateBlock "$BLOCK" --marker test --block-text "$TEXT" -
-    [ $status -eq 98 ]
+    [ $status -eq 99 ]
     [[ "$output" =~ " already contains test; no update necessary."$ ]]
 }
 
-@test "asks and returns 99 and no output if the update is declined by the user" {
+@test "asks and returns 98 and no output if the update is declined by the user" {
     export MEMOIZEDECISION_CHOICE=n
     run pipedContainedOrAddOrUpdateBlock "$BLOCK" --marker test --block-text new -
-    [ $status -eq 99 ]
+    [ $status -eq 98 ]
     [[ "$output" =~ does\ not\ yet\ contain\ test\.\ Shall\ I\ update\ it\? ]]
 }
 

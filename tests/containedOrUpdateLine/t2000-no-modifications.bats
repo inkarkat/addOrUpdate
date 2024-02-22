@@ -9,9 +9,9 @@ load temp
     [ "$output" = "$FILE does not match; no update possible." ]
 }
 
-@test "returns 98 and error message if the file already contains the line" {
+@test "returns 99 and error message if the file already contains the line" {
     init
     run containedOrUpdateLine --in-place --update-match "foo=bar" --replacement "foo=bar" "$FILE"
-    [ $status -eq 98 ]
+    [ $status -eq 99 ]
     [ "$output" = "$FILE already contains 'foo=bar'; no update necessary." ]
 }
