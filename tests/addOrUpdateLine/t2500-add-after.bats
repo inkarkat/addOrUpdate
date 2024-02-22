@@ -48,8 +48,8 @@ foo=hoo bar baz
 # SECTION
 foo=hi" ]
 }
-@test "update with existing line before the passed line keeps contents and returns 1" {
+@test "update with existing line before the passed line keeps contents and returns 99" {
     run addOrUpdateLine --line "foo=bar" --add-after 3 "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }

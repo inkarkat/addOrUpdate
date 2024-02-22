@@ -9,20 +9,20 @@ load temp
 new=add" ]
 }
 
-@test "update with literal-like pattern keeps contents and returns 1" {
+@test "update with literal-like pattern keeps contents and returns 99" {
     run addOrUpdateAssignment --lhs foo --rhs new --accept-match "foo=b" "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
-@test "update with anchored pattern keeps contents and returns 1" {
+@test "update with anchored pattern keeps contents and returns 99" {
     run addOrUpdateAssignment --lhs foo --rhs new --accept-match "^fo\+=[abc].*$" "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
-@test "update with pattern containing forward and backslash keeps contents and returns 1" {
+@test "update with pattern containing forward and backslash keeps contents and returns 99" {
     run addOrUpdateAssignment --lhs foo --rhs '/e\' --accept-match "^.*/.=.*\\.*" "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }

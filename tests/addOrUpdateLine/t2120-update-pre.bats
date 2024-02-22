@@ -27,7 +27,7 @@ foo=hi" ]
 @test "identical update skips pre line" {
     PRELINE="# new header"
     run addOrUpdateLine --line 'foo=new' --pre-update "$PRELINE" --update-match '^foo=b.*' --replacement 'foo=bar' "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 

@@ -29,9 +29,9 @@ foo=moo bar baz" ]
     cmp "$FILE3" "$MORE3"
 }
 
-@test "update all with existing line in all files keeps contents and returns 1" {
+@test "update all with existing line in all files keeps contents and returns 99" {
     run updateLine --all --in-place --update-match "foo=bar" --replacement '&' "$FILE" "$FILE2" "$FILE3"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     cmp "$FILE" "$INPUT"
     cmp "$FILE2" "$MORE2"
     cmp "$FILE3" "$MORE3"
@@ -46,10 +46,10 @@ foo=moo bar baz" ]
     cmp "$FILE3" "$MORE3"
 }
 
-@test "update all with existing line in one file returns 1" {
+@test "update all with existing line in one file returns 99" {
     UPDATE="foo=hoo bar baz"
     run updateLine --all --in-place --update-match "$UPDATE" --replacement '&' "$FILE2" "$FILE3" "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     cmp "$FILE" "$INPUT"
     cmp "$FILE2" "$MORE2"
     cmp "$FILE3" "$MORE3"

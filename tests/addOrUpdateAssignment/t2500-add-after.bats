@@ -35,8 +35,8 @@ foo=hoo bar baz
 fox=hi" ]
 }
 
-@test "update with existing assignment after the passed line keeps contents and returns 1" {
+@test "update with existing assignment after the passed line keeps contents and returns 99" {
     run addOrUpdateAssignment --lhs foo --rhs bar --add-after 3 "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }

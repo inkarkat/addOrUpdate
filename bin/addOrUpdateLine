@@ -90,11 +90,11 @@ All PATTERNs are sed-style basic regular expressions; ADDRESS a sed address.
 
 EXIT STATUS:
     0	An update has happened (with --all: in at least one FILE).
-    1	The LINE already existed, no modifications were made.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
     4	None of the passed FILE(s) exist; no modifications could be made.
     5	A FILE could not be created / modified (due to problems with sed).
+    99	The LINE already existed, no modifications were made.
 
 Example:
 HELPTEXT
@@ -275,10 +275,10 @@ process()
     sedProgram+=(
 	-e ':last'
 	# On the last line, we check the hold space. If it's identical to the
-	# changed line, no processing actually has happened, and we indicate an
-	# error. If the hold space isn't empty, skip further processing (i.e.
+	# changed line, no processing actually has happened, and we indicate the
+	# noop. If the hold space isn't empty, skip further processing (i.e.
 	# appending), as we've already done the update.
-	-e "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /^\\n\\n$/{ x; b slurpToEnd }; /^\\n\$\\|${literalLinePattern//\//\\/}/{ x; b slurpToEndAndQuit }; /./{ x; b; }; x; }"
+	-e "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /^\\n\\n$/{ x; b slurpToEnd }; /^\\n\$\\|${literalLinePattern//\//\\/}/{ x; b slurpToEndAndNoop }; /./{ x; b; }; x; }"
     )
 
     if [ "$isAppend" ]; then
@@ -307,7 +307,7 @@ process()
     else
 	sedProgram+=(
 	    # Indicate no update via special exit status.
-	    -e "${addBeforeAddress:-${addAfterAddress:-\$}}b slurpToEndAndQuit"
+	    -e "${addBeforeAddress:-${addAfterAddress:-\$}}b slurpToEndAndError"
 	)
     fi
 
@@ -318,8 +318,12 @@ process()
 	-e '$!{ N; P; s/^[^\n]*\n//; b slurpToEnd }'
 	-e 'b'
 
-	-e ':slurpToEndAndQuit'
-	-e '$!{ N; b slurpToEndAndQuit }'
+	-e ':slurpToEndAndError'
+	-e '$!{ N; b slurpToEndAndError }'
+	-e '$q 98'
+
+	-e ':slurpToEndAndNoop'
+	-e '$!{ N; b slurpToEndAndNoop }'
 	-e '$q 99'
     )
 ${DEBUG:+dump-args --on-debug addOrUpdateBlock -v -- "${sedProgram[@]}"}
@@ -358,7 +362,8 @@ do
     status=$?
     case $status in
 	0)	[ "$isAll" ] && hadSuccess=t || exit $status;;
-	99)	status=1;;
+	98)	status=1;;
+	99)	status=99;;
 	*)	status=5;;
     esac
 done
