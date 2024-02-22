@@ -5,6 +5,8 @@ printUsage()
     addOrAppendAssignment --help 2>&1 | sed \
 	-e '1s#^.*$#Tries to locate an assignment in the form ASSIGNEE="..." in at least one (all with --all) of the passed FILE(s), and updates it so that VALUE gets appended (separated from existing value(s) with a space, in the first file to match, and only the first such matching assignment there).#' \
 	-e '2b removeFirstParagraphLoop' \
+	-e '/0	An update has happened/a\
+    1	No such ASSIGNEE, no modifications were made.' \
 	-e 's/The assignment already existed, no modifications were made\./No such ASSIGNEE, or the VALUE is already there, no modifications were\n	made./' \
 	-e '/^ *\(--create-nonexisting\|--add-before\|--add-after\)/b removeOptionLoop' \
 	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrAppendAssignment /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting\|\[--add-before|--add-after ADDRESS\]//g }' \

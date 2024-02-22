@@ -18,6 +18,8 @@ printLongUsage()
     addOrUpdateWithSed --help 2>&1 | sed \
 	-e '1s#^.*$#Tries to locate an assignment in the form ASSIGNEE="..." in at least one (all with --all) of the passed FILE(s), and updates it so that VALUE gets appended (separated from existing value(s) with a space, in the first file to match, and only the first such matching assignment there), or appends ASSIGNEE="VALUE" (at the end of the last FILE) if such assignment does not exist yet.#' \
 	-e '2b removeFirstParagraphLoop' \
+	-e '/^    1	No modifications could be made.$/d' \
+	-e 's/^    99	No modifications were made./    99  The VALUE had already been assigned to ASSIGNEE, no modifications were\n        made./' \
 	-e 's/LINE/assignment/g' \
 	-e '/^ *\(--last-file\)/b removeOptionLoop' \
 	-e "/^ *--in-place/i\\
@@ -87,7 +89,7 @@ literalQuote="${literalQuote//&/\\&}"
 
 typeset -a sedProgramStart=(
     -e "{ x; /./{ x; b slurpToEnd }; x }"
-    -e "/^${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\(.*${literalSeparatorPattern//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${literalSeparatorPattern//\//\\/}.*\\)\\?${literalQuotePattern//\//\\/}\$/{ b slurpToEndAndQuit }"
+    -e "/^${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\(.*${literalSeparatorPattern//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${literalSeparatorPattern//\//\\/}.*\\)\\?${literalQuotePattern//\//\\/}\$/{ b slurpToEndAndNoop }"
 
     -e "s/^\\(${literalLhs//\//\\/}=\\)\$/\\1${literalQuote//\//\\/}${literalRhs//\//\\/}${literalQuote//\//\\/}/; t slurpToEnd"
     -e "s/^\\(${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalRhs//\//\\/}\\2/; t slurpToEnd"
@@ -96,15 +98,19 @@ typeset -a sedProgramStart=(
 )
 typeset -a sedProgramLastFile=()
 typeset -a sedProgramEnd=(
-    -e "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /^$/{ x; b slurpToEndAndQuit }; x; b slurpToEnd }"
+    -e "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /^$/{ x; b slurpToEndAndError }; x; b slurpToEnd }"
     -e 'b'
 
     -e ':slurpToEnd'
     -e '$!{ N; P; s/^[^\n]*\n//; b slurpToEnd }'
     -e 'b'
 
-    -e ':slurpToEndAndQuit'
-    -e '$!{ N; P; s/^[^\n]*\n//; b slurpToEndAndQuit }'
+    -e ':slurpToEndAndError'
+    -e '$!{ N; P; s/^[^\n]*\n//; b slurpToEndAndError }'
+    -e '$q 98'
+
+    -e ':slurpToEndAndNoop'
+    -e '$!{ N; P; s/^[^\n]*\n//; b slurpToEndAndNoop }'
     -e '$q 99'
 )
 

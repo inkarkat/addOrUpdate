@@ -8,9 +8,9 @@ load temp
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
-@test "update with existing assignment keeps contents and returns 1" {
+@test "update with existing assignment keeps contents and returns 99" {
     run appendAssignment --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
@@ -20,9 +20,9 @@ load temp
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
-@test "update with existing assignment containing forward and backslash keeps contents and returns 1" {
+@test "update with existing assignment containing forward and backslash keeps contents and returns 99" {
     run appendAssignment --lhs 'sing/e' --rhs 'wha\ever' "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
@@ -33,9 +33,9 @@ load temp
     [ "$(cat "$FILE")" = "$(cat "$INPUT")" ]
 }
 
-@test "in-place update with existing assignment keeps contents and returns 1" {
+@test "in-place update with existing assignment keeps contents and returns 99" {
     run appendAssignment --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "$FILE" "$INPUT"
 }
@@ -47,9 +47,9 @@ load temp
     cmp "$FILE" "$INPUT"
 }
 
-@test "test-only update with existing assignment returns 1" {
+@test "test-only update with existing assignment returns 99" {
     run appendAssignment --test-only --lhs foo --rhs bar "$FILE"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "$FILE" "$INPUT"
 }

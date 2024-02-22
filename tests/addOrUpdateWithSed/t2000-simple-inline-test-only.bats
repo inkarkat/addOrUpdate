@@ -13,9 +13,15 @@ foo=hoo bar baz
 foo=hi" ]
 }
 
-@test "update with no modification returns 1" {
-    run addOrUpdateWithSed $SED_NO_MOD -- "$FILE"
+@test "update with error returns 1" {
+    run addOrUpdateWithSed $SED_ERROR -- "$FILE"
     [ $status -eq 1 ]
+    [ "$output" = "$(cat "$INPUT")" ]
+}
+
+@test "update with no modification returns 99" {
+    run addOrUpdateWithSed $SED_NO_MOD -- "$FILE"
+    [ $status -eq 99 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
@@ -31,9 +37,16 @@ foo=hoo bar baz
 foo=hi" ]
 }
 
-@test "in-place update with no modification returns 1" {
-    run addOrUpdateWithSed --in-place $SED_NO_MOD -- "$FILE"
+@test "in-place update with error returns 1" {
+    run addOrUpdateWithSed --in-place $SED_ERROR -- "$FILE"
     [ $status -eq 1 ]
+    [ "$output" = "" ]
+    cmp "$FILE" "$INPUT"
+}
+
+@test "in-place update with no modification returns 99" {
+    run addOrUpdateWithSed --in-place $SED_NO_MOD -- "$FILE"
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "$FILE" "$INPUT"
 }
@@ -45,9 +58,16 @@ foo=hi" ]
     cmp "$FILE" "$INPUT"
 }
 
-@test "test-only update with no modification returns 1" {
-    run addOrUpdateWithSed --test-only $SED_NO_MOD -- "$FILE"
+@test "test-only update with error returns 1" {
+    run addOrUpdateWithSed --test-only $SED_ERROR -- "$FILE"
     [ $status -eq 1 ]
+    [ "$output" = "" ]
+    cmp "$FILE" "$INPUT"
+}
+
+@test "test-only update with no modification returns 99" {
+    run addOrUpdateWithSed --test-only $SED_NO_MOD -- "$FILE"
+    [ $status -eq 99 ]
     [ "$output" = "" ]
     cmp "$FILE" "$INPUT"
 }
