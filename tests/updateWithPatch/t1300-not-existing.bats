@@ -2,8 +2,8 @@
 
 load temp
 
-@test "patching non-existing file returns 5" {
+@test "patching non-existing file returns 1" {
     run updateWithPatch doesNotExist.patch
-    [ $status -eq 5 ]
+    [ $status -eq 1 ]
     [ "$output" = "patch: **** Can't open patch file doesNotExist.patch : No such file or directory" ]
 }

@@ -8,9 +8,9 @@ load temp
     [ "$output" = "" ]
 }
 
-@test "patching first with two no-mods returns 1" {
+@test "patching first with two no-mods returns 99" {
     run updateWithPatch --first --test-only "$REVERTED_PATCH" "$REVERTED_PATCH"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "Reversed (or previously applied) patch detected!  Skipping patch.
 1 out of 1 hunk ignored
 Reversed (or previously applied) patch detected!  Skipping patch.
@@ -49,17 +49,17 @@ Reversed (or previously applied) patch detected!  Skipping patch.
     [ "$output" = "1 out of 1 hunk FAILED" ]
 }
 
-@test "patching first with no-mod and non-applicable returns 1" {
+@test "patching first with no-mod and non-applicable returns 99" {
     run updateWithPatch --first --test-only "$REVERTED_PATCH" "$UNAPPLICABLE_PATCH"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "Reversed (or previously applied) patch detected!  Skipping patch.
 1 out of 1 hunk ignored
 1 out of 1 hunk FAILED" ]
 }
 
-@test "patching first with non-applicable and no-mod returns 1" {
+@test "patching first with non-applicable and no-mod returns 99" {
     run updateWithPatch --first --test-only "$UNAPPLICABLE_PATCH" "$REVERTED_PATCH"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "1 out of 1 hunk FAILED
 Reversed (or previously applied) patch detected!  Skipping patch.
 1 out of 1 hunk ignored" ]

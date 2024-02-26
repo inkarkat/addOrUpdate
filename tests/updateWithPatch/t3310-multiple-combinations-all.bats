@@ -8,9 +8,9 @@ load temp
     [ "$output" = "" ]
 }
 
-@test "patching all with two no-mods returns 1" {
+@test "patching all with two no-mods returns 99" {
     run updateWithPatch --all --test-only "$REVERTED_PATCH" "$REVERTED_PATCH"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "Reversed (or previously applied) patch detected!  Skipping patch.
 1 out of 1 hunk ignored
 Reversed (or previously applied) patch detected!  Skipping patch.

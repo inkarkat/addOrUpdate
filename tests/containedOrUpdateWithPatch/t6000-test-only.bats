@@ -2,10 +2,10 @@
 
 load temp
 
-@test "returns 1 and error message and does not modify the file when testing if the file already is up-to-date" {
+@test "returns 99 and error message and does not modify the file when testing if the file already is up-to-date" {
     cp -f "$RESULT" "$FILE"
     run containedOrUpdateWithPatch --test-only --in-place "$PATCH"
-    [ $status -eq 1 ]
+    [ $status -eq 99 ]
     [ "$output" = "existing.txt already contains diff.patch; no update necessary." ]
     cmp -- "$RESULT" "$FILE"
 }

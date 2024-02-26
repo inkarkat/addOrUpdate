@@ -47,12 +47,12 @@ HELPDESCRIPTION
 			    and are up-to-date.
 EXIT STATUS:
     0	An update has happened.
-    1	The file(s) have already been patched, no modifications were made.
+    1	A PATCH cannot be read / is invalid.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
     4	None of the passed PATCH(es) could be applied.
 	With --all: At least one of the passed PATCH(es) could not be applied.
-    5	A PATCH cannot be read.
+    99	The file(s) have already been patched, no modifications were made.
 
 Example:
 HELPTEXT
@@ -149,7 +149,8 @@ processPatches()
 	doPatch --silent "${patchDirectionArgs[@]}" --input "$patchFilespec"
 	case $? in
 	    0)  if [ "$isAll" ]; then
-		    [ ${status:-0} -le 1 ] && status=0
+		    : ${status:=0}
+		    [ $status -eq 0 -o $status -eq 99 ] && status=0
 		else
 		    status=0
 		fi
@@ -158,15 +159,15 @@ processPatches()
 		;;
 	    1)  if doPatch --silent "${patchReverseDirectionArgs[@]}" --dry-run --input "$patchFilespec" >/dev/null 2>&1; then
 		    if [ "$isAll" ]; then
-			: ${status:=1}
-		    elif [ ${status:-4} -ge 1 ]; then
-			status=1
+			: ${status:=99}
+		    elif [ ${status:-4} -ge 4 ]; then
+			status=99
 		    fi
 		elif [ "$isAll" ]; then
 		    status=4
 		fi
 		;;
-	    2)  forceStatus=5;;
+	    2)  forceStatus=1;;
 	    *)  forceStatus=3;;
 	esac
     done
