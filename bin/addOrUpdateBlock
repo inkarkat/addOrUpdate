@@ -1,6 +1,7 @@
 #!/bin/bash
 
 : ${ADDORUPDATEBLOCK_COMMENT_PREFIX=# }
+: ${ADDORUPDATEBLOCK_COMMENT_SUFFIX=}
 
 literalPattern()
 {
@@ -56,10 +57,11 @@ HELPDESCRIPTION
 			    line won't be considered! If ADDRESS is never
 			    reached / never matches, no update will be inserted!
     --marker|-m WHAT	    Synthesize BEGIN-LINE and END-LINE based on WHAT:
-				${ADDORUPDATEBLOCK_COMMENT_PREFIX}BEGIN WHAT
-				${ADDORUPDATEBLOCK_COMMENT_PREFIX}END WHAT
-			    The comment prefix (${ADDORUPDATEBLOCK_COMMENT_PREFIX}) can be configured via
-			    \$ADDORUPDATEBLOCK_COMMENT_PREFIX.
+				${ADDORUPDATEBLOCK_COMMENT_PREFIX}BEGIN WHAT${ADDORUPDATEBLOCK_COMMENT_SUFFIX}
+				${ADDORUPDATEBLOCK_COMMENT_PREFIX}END${ADDORUPDATEBLOCK_COMMENT_SUFFIX} WHAT
+			    The comment prefix / suffix (${ADDORUPDATEBLOCK_COMMENT_PREFIX}/${ADDORUPDATEBLOCK_COMMENT_SUFFIX}) can be
+			    configured via \$ADDORUPDATEBLOCK_COMMENT_PREFIX /
+			    \$ADDORUPDATEBLOCK_COMMENT_SUFFIX.
     --begin-marker BEGIN-LINE
 			    The line that marks the beginning of the block.
     --end-marker END-LINE   The line that marks the end of the block.
@@ -120,7 +122,7 @@ do
 			    shift; isIgnoreNonexisting=t;;
 	--create-nonexisting)
 			    shift; isCreateNonexisting=t;;
-	--marker|-m)	    shift; beginMarker="${ADDORUPDATEBLOCK_COMMENT_PREFIX}BEGIN${1:+ }${1//$'\n'/ }"; endMarker="${ADDORUPDATEBLOCK_COMMENT_PREFIX}END${1:+ }${1//$'\n'/ }"; shift;;
+	--marker|-m)	    shift; beginMarker="${ADDORUPDATEBLOCK_COMMENT_PREFIX}BEGIN${1:+ }${1//$'\n'/ }${ADDORUPDATEBLOCK_COMMENT_SUFFIX}"; endMarker="${ADDORUPDATEBLOCK_COMMENT_PREFIX}END${1:+ }${1//$'\n'/ }${ADDORUPDATEBLOCK_COMMENT_SUFFIX}"; shift;;
 	--begin-marker)	    shift; beginMarker="${1//$'\n'/ }"; shift;;
 	--end-marker)	    shift; endMarker="${1//$'\n'/ }"; shift;;
 	--block-file|-B)    shift

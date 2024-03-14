@@ -27,3 +27,17 @@ BEGIN test
 Updated stuff
 END test" ]
 }
+
+@test "update of block with customized comment prefix and suffix" {
+    ADDORUPDATEBLOCK_COMMENT_PREFIX='<!-- ' ADDORUPDATEBLOCK_COMMENT_SUFFIX=' -->' \
+	run updateBlock --marker test --block-text $'Updated stuff\n# END test' "${BATS_TEST_DIRNAME}/different-comment-prefix-suffix.txt"
+    [ $status -eq 0 ]
+    [ "$output" = "first
+# BEGIN test
+<!-- BEGIN test -->
+Updated stuff
+# END test
+<!-- END test -->
+BEGIN test
+END test" ]
+}
