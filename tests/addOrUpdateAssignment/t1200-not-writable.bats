@@ -1,23 +1,29 @@
 #!/usr/bin/env bats
 
-@test "updating not-writable existing file returns 5" {
-    IMMUTABLE='/etc/hosts'
-    [ -e "$IMMUTABLE" -a ! -w "$IMMUTABLE" ]
-    run addOrUpdateAssignment --in-place --lhs foo --rhs new "$IMMUTABLE"
+setup()
+{
+    IMMUTABLE_DIRSPEC="${BATS_TMPDIR}/immutable"
+    IMMUTABLE_DIR_FILESPEC="${IMMUTABLE_DIRSPEC}/file"
+    mkdir --parents -- "$IMMUTABLE_DIRSPEC"
+    echo contents > "$IMMUTABLE_DIR_FILESPEC"
+    chmod 500 -- "$IMMUTABLE_DIRSPEC"
+    [ -d "$IMMUTABLE_DIRSPEC" -a ! -w "$IMMUTABLE_DIRSPEC" ]
+}
+
+@test "updating existing file in not-writable dir returns 5" {
+    run addOrUpdateAssignment --in-place --lhs foo --rhs new "$IMMUTABLE_DIRSPEC"
     [ $status -eq 5 ]
     [ "${#lines[@]}" -eq 1 ]
     [[ "$output" =~ ^sed: ]]
 }
 
 @test "creating a nonexisting file in a non-writable directory returns 5" {
-    IMMUTABLE_DIR='/etc'
-    [ -d "$IMMUTABLE_DIR" -a ! -w "$IMMUTABLE_DIR" ]
-    IMMUTABLE="${IMMUTABLE_DIR}/doesNotExist"
-    [ ! -e "$IMMUTABLE" ]
-    run addOrUpdateAssignment --create-nonexisting --in-place --lhs foo --rhs new "$IMMUTABLE"
+    IMMUTABLE_NEW="${IMMUTABLE_DIRSPEC}/doesNotExist"
+    [ ! -e "$IMMUTABLE_NEW" ]
+    run addOrUpdateAssignment --create-nonexisting --in-place --lhs foo --rhs new "$IMMUTABLE_NEW"
     [ $status -eq 5 ]
     [ "${#lines[@]}" -eq 1 ]
-    [[ "$output" =~ /etc/doesNotExist:\ Permission\ denied$ ]]
+    [[ "$output" =~ /doesNotExist:\ Permission\ denied$ ]]
 }
 
 @test "creating a nonexisting file in a nonexisting directory returns 5" {
