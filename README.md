@@ -2,6 +2,8 @@
 
 _Commands that ensure the existence of a text fragment in a file._
 
+![Build Status](https://github.com/inkarkat/addOrUpdate/actions/workflows/build.yml/badge.svg)
+
 Text fragments can be single lines, or as a specialization `ASSIGNEE=VALUE` lines, or whole blocks of text.
 
 ### Dependencies
