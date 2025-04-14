@@ -9,10 +9,10 @@ load temp
     [ "${lines[1]%% *}" = "Usage:" ]
 }
 
-@test "error when no REPLACEMENT passed" {
+@test "error when no --line and no --replacement is passed" {
     run updateLine --update-match old "$FILE"
     [ $status -eq 2 ]
-    [ "${lines[0]}" = "ERROR: No --replacement REPLACEMENT passed." ]
+    [ "${lines[0]}" = "ERROR: No --line LINE or --replacement REPLACEMENT passed." ]
     [ "${lines[1]%% *}" = "Usage:" ]
 }
 
@@ -48,12 +48,5 @@ load temp
     run updateLine --replacement new "$FILE"
     [ $status -eq 2 ]
     [ "${lines[0]}" = "ERROR: No --update-match PATTERN passed." ]
-    [ "${lines[1]%% *}" = "Usage:" ]
-}
-
-@test "error when no --replacement is passed" {
-    run updateLine --update-match old "$FILE"
-    [ $status -eq 2 ]
-    [ "${lines[0]}" = "ERROR: No --replacement REPLACEMENT passed." ]
     [ "${lines[1]%% *}" = "Usage:" ]
 }

@@ -12,7 +12,7 @@ load temp
 @test "update with one pre line and line" {
     PRELINE="# new header"
     UPDATE='foo=not here'
-    run updateLine --pre-update "$PRELINE" --update-match "foo=h.*" --replacement "$UPDATE" "$FILE"
+    run updateLine --pre-update "$PRELINE" --update-match "foo=h.*" --line "$UPDATE" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = "sing/e=wha\\ever
 foo=bar

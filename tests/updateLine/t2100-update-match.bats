@@ -4,13 +4,13 @@ load temp
 
 @test "update with nonmatching pattern returns 1" {
     UPDATE="foo=new"
-    run updateLine --update-match "foosball=never" --replacement new "$FILE"
+    run updateLine --update-match "foosball=never" --line new "$FILE"
     [ $status -eq 1 ]
     [ "$output" = "$(cat "$INPUT")" ]
 }
 
 @test "update with literal-like pattern updates first matching line" {
-    run updateLine --update-match "foo=h.*" --replacement "foo=new" "$FILE"
+    run updateLine --update-match "foo=h.*" --line "foo=new" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = 'sing/e=wha\ever
 foo=bar
@@ -20,7 +20,7 @@ foo=hi' ]
 }
 
 @test "update with anchored pattern updates first matching line" {
-    run updateLine --update-match "^fo\+=[ghi].*$" --replacement "foo=new" "$FILE"
+    run updateLine --update-match "^fo\+=[ghi].*$" --line "foo=new" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = 'sing/e=wha\ever
 foo=bar

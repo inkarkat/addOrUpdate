@@ -2,8 +2,8 @@
 
 load temp
 
-@test "update with pattern matching full line uses REPLACEMENT" {
-    run updateLine --update-match '^foo=h.*$' --replacement "ox=replaced" "$FILE"
+@test "update with pattern matching full line uses LINE" {
+    run updateLine --update-match '^foo=h.*$' --line "ox=replaced" "$FILE"
 
     [ $status -eq 0 ]
     [ "$output" = 'sing/e=wha\ever
@@ -13,8 +13,8 @@ ox=replaced
 foo=hi' ]
 }
 
-@test "update with pattern matching partial line uses REPLACEMENT just for match" {
-    run updateLine --update-match 'oo=h[a-z]\+' --replacement "ox=replaced" "$FILE"
+@test "update with pattern matching partial line uses LINE just for match" {
+    run updateLine --update-match 'oo=h[a-z]\+' --line "ox=replaced" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = 'sing/e=wha\ever
 foo=bar
@@ -43,8 +43,15 @@ foo=bar
 foo=hi' ]
 }
 
+@test "empty LINE is not supported" {
+    run updateLine --update-match '^foo=h.*$' --line '' "$FILE"
+
+    [ $status -eq 2 ]
+    [ "${lines[0]}" = 'ERROR: No --line LINE or --replacement REPLACEMENT passed.' ]
+}
+
 @test "empty REPLACEMENT" {
-    run updateLine --update-match '^foo=h.*$' --replacement "" "$FILE"
+    run updateLine --update-match '^foo=h.*$' --replacement '' "$FILE"
 
     [ $status -eq 0 ]
     [ "$output" = 'sing/e=wha\ever

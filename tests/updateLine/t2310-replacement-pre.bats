@@ -2,9 +2,9 @@
 
 load temp
 
-@test "update with pattern matching full line uses pre line and REPLACEMENT" {
+@test "update with pattern matching full line uses pre line and LINE" {
     PRELINE="# new header"
-    run updateLine --pre-update "$PRELINE" --update-match '^foo=h.*$' --replacement "ox=replaced" "$FILE"
+    run updateLine --pre-update "$PRELINE" --update-match '^foo=h.*$' --line "ox=replaced" "$FILE"
 
     [ $status -eq 0 ]
     [ "$output" = "sing/e=wha\\ever
@@ -14,9 +14,9 @@ ox=replaced
 # SECTION
 foo=hi" ]
 }
-@test "update with pattern matching partial line uses pre line and REPLACEMENT just for match" {
+@test "update with pattern matching partial line uses pre line and LINE just for match" {
     PRELINE="# new header"
-    run updateLine --pre-update "$PRELINE" --update-match 'oo=h[a-z]\+' --replacement "ox=replaced" "$FILE"
+    run updateLine --pre-update "$PRELINE" --update-match 'oo=h[a-z]\+' --line "ox=replaced" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = "sing/e=wha\\ever
 foo=bar

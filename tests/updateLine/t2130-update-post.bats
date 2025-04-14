@@ -12,7 +12,7 @@ load temp
 @test "update with one post line and line" {
     POSTLINE="# new footer"
     UPDATE='foo=not here'
-    run updateLine --post-update "$POSTLINE" --update-match "foo=h.*" --replacement "$UPDATE" "$FILE"
+    run updateLine --post-update "$POSTLINE" --update-match "foo=h.*" --line "$UPDATE" "$FILE"
     [ $status -eq 0 ]
     [ "$output" = "sing/e=wha\\ever
 foo=bar

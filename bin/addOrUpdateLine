@@ -155,8 +155,8 @@ elif [ "$ADDORUPDATELINE_NO_APPEND" ] && [ -z "$updateMatch" ]; then
     echo
     printUsage "$0"
     exit 2
-elif [ "$ADDORUPDATELINE_NO_APPEND" ] && [ -z "${replacement+t}" ]; then
-    echo 'ERROR: No --replacement REPLACEMENT passed.'
+elif [ "$ADDORUPDATELINE_NO_APPEND" ] && [ -z "$line" -a -z "${replacement+t}" ]; then
+    echo 'ERROR: No --line LINE or --replacement REPLACEMENT passed.'
     echo
     printUsage "$0"
     exit 2
@@ -186,6 +186,7 @@ insertableLine="${line//\\/\\\\}"
 insertableLine="${insertableLine//${NL}/\\${NL}}"
 if [ "$ADDORUPDATELINE_NO_APPEND" ]; then
     literalLinePattern='\n'  # Never matches in a line.
+    [ -n "${replacement+t}" ] || replacement="$(literalReplacement "$line")"
 else
     literalLinePattern="^$(printf %s "$line" | literalPattern)\$"
 fi

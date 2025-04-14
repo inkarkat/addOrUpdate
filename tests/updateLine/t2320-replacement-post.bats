@@ -2,9 +2,9 @@
 
 load temp
 
-@test "update with pattern matching full line uses post line and REPLACEMENT" {
+@test "update with pattern matching full line uses post line and LINE" {
     POSTLINE="# new footer"
-    run updateLine --post-update "$POSTLINE" --update-match '^foo=h.*$' --replacement "ox=replaced" "$FILE"
+    run updateLine --post-update "$POSTLINE" --update-match '^foo=h.*$' --line "ox=replaced" "$FILE"
 
     [ $status -eq 0 ]
     [ "$output" = "sing/e=wha\\ever

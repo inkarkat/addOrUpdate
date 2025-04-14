@@ -3,14 +3,17 @@
 printUsage()
 {
     addOrUpdateLine --help 2>&1 | sed \
-	-e '1s#^.*$#Updates the first line that matches PATTERN (once, in the first file to match, or in all with --all (but still just the first match in each)) in the passed FILE(s) with REPLACEMENT.#' \
+	-e '1s#^.*$#Updates the first line that matches PATTERN (once, in the first file to match, or in all with --all (but still just the first match in each)) in the passed FILE(s) with LINE / REPLACEMENT.#' \
 	-e '2b removeFirstParagraphLoop' \
 	-e '/0	An update has happened/a\
     1	PATTERN does not match, no modifications were made.' \
 	-e 's/Instead of searching for the literal LINE, accept/Accept/' \
 	-e 's/instead of the literal LINE//' \
 	-e '/^ *\(--create-nonexisting\|--line\|--pre-line\|--post-line\)/b removeOptionLoop' \
-	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateLine /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting//; s/-l|--line LINE//; s/\[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\]/-u|--update-match PATTERN -r|--replacement REPLACEMENT/; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
+	-e '/^ *--replace/i\
+    --line|-l LINE	    Replace with LINE when a matching one has been\
+			    found.' \
+	-e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateLine /\1\2'"$(basename "$1")"' /; s/|--create-nonexisting//; s/-l|--line LINE//; s/\[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\]/-u|--update-match PATTERN -l|--line LINE|-r|--replacement REPLACEMENT/; s/\[--pre-line PRETEXT \[--pre-line \.\.\.\]\] \[--post-line POSTTEXT \[--post-line \.\.\.\]\] //; }' \
 	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateLine .*/\1\2'"$(basename "$1") --update-match '^\\\\(root:.*:\\\\)\\/bin\\/bash\$' --replacement '\\\\1\\/bin\\/dash' \/etc\/passwd/; }" \
 	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
 	-e b -e :removeOptionLoop -e '{ /\n *\(--create-nonexisting\|--line\|--pre-line\|--post-line\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'

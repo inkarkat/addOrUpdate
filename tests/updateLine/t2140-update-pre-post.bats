@@ -6,7 +6,7 @@ load temp
     PRELINE='/new&header\'
     UPDATE="foo=new"
     POSTLINE='\new&footer/'
-    run updateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --update-match "foo=h.*" --replacement "$UPDATE" "$FILE"
+    run updateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --update-match "foo=h.*" --line "$UPDATE" "$FILE"
     [ "$output" = "sing/e=wha\\ever
 foo=bar
 $PRELINE
