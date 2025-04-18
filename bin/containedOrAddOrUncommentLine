@@ -1,0 +1,51 @@
+#!/bin/bash
+
+typeset -a usageOverrideArgs=(
+    -e '/^ *\(--update-match|-u\|--replacement|-r\)/b removeOptionLoop'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*containedOrAddOrUpdateLine /\1\2'"$(basename "$0")"' [-c|--comment-prefix PREFIX-PATTERN] [-C|--comment-suffix SUFFIX-PATTERN] /; s/ \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] / / }'
+)
+printUsage()
+{
+    containedOrAddOrUpdateLine --doesNotExist 2>&1 | sed \
+	-e '/^ERROR: Unknown option "--doesNotExist"!/{ N; s/\n$//; D; }' \
+	"${usageOverrideArgs[@]}" \
+	-e "/Try containedOrAddOrUpdateLine --help for more information./s/containedOrAddOrUpdateLine/$(basename "$1")/" \
+	-e :removeOptionLoop
+}
+printLongUsage()
+{
+    containedOrAddOrUpdateLine --help 2>&1 | sed \
+	-e '1s#^.*$#If LINE or commented-out LINE do not exist in at least one (all with --all) of the passed FILE(s), asks the user whether to update it so that comment prefix (/ suffix) gets removed (in the first file to match, and only the first such matching comment there), or LINE appended (at the end of the last FILE).#' \
+	-e '2b removeFirstParagraphLoop' \
+	"${usageOverrideArgs[@]}" \
+	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?containedOrAddOrUpdateLine .*/\1\2'"$(basename "$1") -l 'de_DE.UTF-8 UTF-8' \/etc\/locale.gen/; }" \
+	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
+	-e b -e :removeOptionLoop -e '{ /\n *\(--update-match|-u\|--replacement|-r\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
+}
+
+unset line
+commentPrefix='[[:space:]]*#[[:space:]]*'
+commentSuffix='[[:space:]]*'
+typeset -a addOrUpdateLineArgs=()
+while [ $# -ne 0 ]
+do
+    case "$1" in
+	--help|-h|-\?)	shift; printLongUsage "$0"; exit 0;;
+	--comment-prefix|-c)
+			shift; commentPrefix="${1?}"; shift;;
+	--comment-suffix|-C)
+			shift; commentSuffix="${1?}"; shift;;
+	--line|-l)	shift; line="${1?}"; shift;;
+	--)		addOrUpdateLineArgs+=("$1"); shift; break;;
+	*)		addOrUpdateLineArgs+=("$1"); shift;;
+    esac
+done
+if [ -z "$commentPrefix" -a -z "$commentSuffix" ]; then
+    echo 'ERROR: -c|--comment-prefix and -C|--comment-suffix cannot both be empty.'
+    echo
+    printUsage "$0"
+    exit 2
+fi >&2
+
+literalLine="$(printf %s "$line" | sed -e 's/[][\$*.^]/\\&/g')"
+exec containedOrAddOrUpdateLine --line "$line" --update-match "^${literalLine}\$\\|^${commentPrefix}${literalLine}${commentSuffix}\$" "${addOrUpdateLineArgs[@]}" "$@"
