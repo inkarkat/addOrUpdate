@@ -5,8 +5,7 @@ load temp
 @test "patching not-writable existing file returns 4" {
     export MEMOIZEDECISION_CHOICE=y
     chmod -w -- "$FILE"
-    [ ! -w "$FILE" ]
-    run containedOrUpdateWithPatch --in-place "$PATCH"
-    [ $status -eq 4 ]
-    [[ "$output" =~ existing\.txt\ does\ not\ yet\ contain\ diff\.patch\.\ Shall\ I\ apply\ it\? ]]
+    assert_not_file_permission -w "$FILE"
+    run -4 containedOrUpdateWithPatch --in-place "$PATCH"
+    assert_output -p 'existing.txt does not yet contain diff.patch. Shall I apply it?'
 }

@@ -3,9 +3,9 @@
 load temp
 
 @test "update with existing marker but nonmatching accept pattern updates the block" {
-    run updateBlock --marker test --accept-match doesNotMatch --block-text "$TEXT" "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = "first line
+    run -0 updateBlock --marker test --accept-match doesNotMatch --block-text "$TEXT" "$FILE2"
+    assert_output - <<EOF
+first line
 second line
 third line
 # BEGIN test
@@ -24,19 +24,19 @@ Somehoe
 
 # BEGIN final and empty
 # END final and empty
-last line" ]
+last line
+EOF
 }
 
 @test "update with existing marker and literal-like matching accept pattern keeps contents and returns 99" {
-    run updateBlock --marker test --accept-match third --block-text "$TEXT" "$FILE2"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$EXISTING")" ]
+    run -99 updateBlock --marker test --accept-match third --block-text "$TEXT" "$FILE2"
+    assert_output - < "$EXISTING"
 }
 
 @test "update with existing marker and accept pattern that matches too late updates the block" {
-    run updateBlock --marker test --accept-match middle --block-text "$TEXT" "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = "first line
+    run -0 updateBlock --marker test --accept-match middle --block-text "$TEXT" "$FILE2"
+    assert_output - <<EOF
+first line
 second line
 third line
 # BEGIN test
@@ -55,11 +55,11 @@ Somehoe
 
 # BEGIN final and empty
 # END final and empty
-last line" ]
+last line
+EOF
 }
 
 @test "update with existing marker and anchored matching accept pattern keeps contents and returns 99" {
-    run updateBlock --marker test --accept-match '^\(second\|third\) line$' --block-text "$TEXT" "$FILE2"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$EXISTING")" ]
+    run -99 updateBlock --marker test --accept-match '^\(second\|third\) line$' --block-text "$TEXT" "$FILE2"
+    assert_output - < "$EXISTING"
 }

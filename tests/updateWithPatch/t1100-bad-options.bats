@@ -3,22 +3,19 @@
 load temp
 
 @test "error when no PATCH passed" {
-    run updateWithPatch
-    [ $status -eq 2 ]
-    [ "${lines[0]}" = "ERROR: No PATCH passed." ]
-    [ "${lines[1]%% *}" = "Usage:" ]
+    run -2 updateWithPatch
+    assert_line -n 0 'ERROR: No PATCH passed.'
+    assert_line -n 1 -e '^Usage:'
 }
 
 @test "error when combining --in-place and --test-only" {
-    run updateWithPatch --in-place --test-only "$PATCH"
-    [ $status -eq 2 ]
-    [ "${lines[0]}" = "ERROR: Cannot combine --in-place and --test-only." ]
-    [ "${lines[1]%% *}" = "Usage:" ]
+    run -2 updateWithPatch --in-place --test-only "$PATCH"
+    assert_line -n 0 'ERROR: Cannot combine --in-place and --test-only.'
+    assert_line -n 1 -e '^Usage:'
 }
 
 @test "error when combining --first and --all" {
-    run updateWithPatch --first --all "$PATCH"
-    [ $status -eq 2 ]
-    [ "${lines[0]}" = "ERROR: Cannot combine --first and --all." ]
-    [ "${lines[1]%% *}" = "Usage:" ]
+    run -2 updateWithPatch --first --all "$PATCH"
+    assert_line -n 0 'ERROR: Cannot combine --first and --all.'
+    assert_line -n 1 -e '^Usage:'
 }

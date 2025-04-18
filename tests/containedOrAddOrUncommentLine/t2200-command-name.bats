@@ -6,5 +6,5 @@ load temp
     NAME='My test file'
     export MEMOIZEDECISION_CHOICE=n
     run containedOrAddOrUncommentLine --name "$NAME" --in-place --line new "$FILE"
-    assert_output -e "${NAME} does not yet contain 'new'. Shall I update it?"
+    assert_output -p "${NAME} does not yet contain 'new'. Shall I update it?"
 }

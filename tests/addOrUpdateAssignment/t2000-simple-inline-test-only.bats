@@ -3,56 +3,54 @@
 load temp
 
 @test "update with nonexisting assignment appends at the end" {
-    run addOrUpdateAssignment --lhs add --rhs new "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
-add=new" ]
+    run -0 addOrUpdateAssignment --lhs add --rhs new "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
+add=new
+EOF
 }
 
 @test "update with existing assignment keeps contents and returns 99" {
-    run addOrUpdateAssignment --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -99 addOrUpdateAssignment --lhs foo --rhs bar "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "update with nonexisting assignment containing forward and backslash appends at the end" {
-    run addOrUpdateAssignment --lhs '/new\' --rhs '\here/' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
-/new\=\here/" ]
+    run -0 addOrUpdateAssignment --lhs '/new\' --rhs '\here/' "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
+/new\=\here/
+EOF
 }
 
 @test "update with existing assignment containing forward and backslash keeps contents and returns 99" {
-    run addOrUpdateAssignment --lhs 'sing/e' --rhs 'wha\ever' "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -99 addOrUpdateAssignment --lhs 'sing/e' --rhs 'wha\ever' "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "in-place update with nonexisting assignment appends at the end" {
-    run addOrUpdateAssignment --in-place --lhs add --rhs new "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ "$(cat "$FILE")" = "$(cat "$INPUT")
-add=new" ]
+    run -0 addOrUpdateAssignment --in-place --lhs add --rhs new "$FILE"
+    assert_output ''
+    diff -y - --label expected "$FILE" <<EOF
+$(cat "$INPUT")
+add=new
+EOF
 }
 
 @test "in-place update with existing assignment keeps contents and returns 99" {
-    run addOrUpdateAssignment --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -99 addOrUpdateAssignment --in-place --lhs foo --rhs bar "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with nonexisting assignment succeeds" {
-    run addOrUpdateAssignment --test-only --lhs add --rhs new "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -0 addOrUpdateAssignment --test-only --lhs add --rhs new "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with existing assignment returns 99" {
-    run addOrUpdateAssignment --test-only --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -99 addOrUpdateAssignment --test-only --lhs foo --rhs bar "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }

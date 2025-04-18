@@ -1,5 +1,7 @@
 #!/bin/bash
 
+load fixture
+
 export PATCH="${BATS_TEST_DIRNAME}/diff.patch"
 export SECOND_PATCH="${BATS_TEST_DIRNAME}/second.patch"
 export ALTERNATIVE_PATCH="${BATS_TEST_DIRNAME}/alternative.patch"

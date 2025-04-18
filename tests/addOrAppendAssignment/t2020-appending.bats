@@ -3,29 +3,32 @@
 load temp
 
 @test "update appends to existing value" {
-    run addOrAppendAssignment --lhs foo --rhs added "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = 'sing/e="wha\ever"
+    run -0 addOrAppendAssignment --lhs foo --rhs added "$FILE"
+    assert_output - <<'EOF'
+sing/e="wha\ever"
 foo="bar added"
 foo="hoo bar baz"
 # SECTION
-fox="hi there"' ]
+fox="hi there"
+EOF
 }
 
 @test "update inserts to empty quoted value" {
-    run addOrAppendAssignment --lhs foy --rhs added "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = 'foo="bar"
+    run -0 addOrAppendAssignment --lhs foy --rhs added "$FILE2"
+    assert_output - <<'EOF'
+foo="bar"
 quux="initial value"
 fox=
-foy="added"' ]
+foy="added"
+EOF
 }
 
 @test "update inserts to empty unquoted value" {
-    run addOrAppendAssignment --lhs fox --rhs added "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = 'foo="bar"
+    run -0 addOrAppendAssignment --lhs fox --rhs added "$FILE2"
+    assert_output - <<'EOF'
+foo="bar"
 quux="initial value"
 fox="added"
-foy=""' ]
+foy=""
+EOF
 }

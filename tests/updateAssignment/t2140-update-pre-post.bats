@@ -6,11 +6,13 @@ load temp
     PRELINE='/new&header\'
     POSTLINE='\new&footer/'
     run updateAssignment --pre-update "$PRELINE" --post-update "$POSTLINE" --lhs foo --rhs new "$FILE"
-    [ "$output" = "sing/e=wha\\ever
+    assert_output - <<EOF
+sing/e=wha\\ever
 $PRELINE
 foo=new
 $POSTLINE
 foo=hoo bar baz
 # SECTION
-fox=hi" ]
+fox=hi
+EOF
 }

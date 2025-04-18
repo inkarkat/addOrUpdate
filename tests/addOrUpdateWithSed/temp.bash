@@ -1,5 +1,7 @@
 #!/bin/bash
 
+load fixture
+
 export INPUT="${BATS_TEST_DIRNAME}/input.txt"
 export MORE2="${BATS_TEST_DIRNAME}/more2.txt"
 export MORE3="${BATS_TEST_DIRNAME}/more3.txt"

@@ -7,5 +7,5 @@ load temp
     NAME="My test file"
     export MEMOIZEDECISION_CHOICE=n
     run containedOrAddOrUpdateAssignment --name "$NAME" --in-place --lhs foo --rhs new "$FILE"
-    [[ "$output" =~ ${NAME}\ does\ not\ yet\ contain\ \'foo=new\'\.\ Shall\ I\ update\ it\? ]]
+    assert_output -p "${NAME} does not yet contain 'foo=new'. Shall I update it?"
 }

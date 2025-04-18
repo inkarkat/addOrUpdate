@@ -3,17 +3,17 @@
 load temp
 
 @test "update with nonexisting assignment returns 1" {
-    run updateAssignment --lhs new --rhs add "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -1 updateAssignment --lhs new --rhs add "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "update with assignee containing forward slash updates" {
-    run updateAssignment --lhs 'sing/e' --rhs 'whe\reever' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = 'sing/e=whe\reever
+    run -0 updateAssignment --lhs 'sing/e' --rhs 'whe\reever' "$FILE"
+    assert_output - <<'EOF'
+sing/e=whe\reever
 foo=bar
 foo=hoo bar baz
 # SECTION
-fox=hi' ]
+fox=hi
+EOF
 }

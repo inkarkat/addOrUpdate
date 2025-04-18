@@ -3,33 +3,28 @@
 load temp
 
 @test "update with nonexisting assignment returns 1" {
-    run updateAssignment --lhs add --rhs new "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -1 updateAssignment --lhs add --rhs new "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "update with existing assignment keeps contents and returns 99" {
-    run updateAssignment --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -99 updateAssignment --lhs foo --rhs bar "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "update with existing assignment containing forward and backslash keeps contents and returns 99" {
-    run updateAssignment --lhs 'sing/e' --rhs 'wha\ever' "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -99 updateAssignment --lhs 'sing/e' --rhs 'wha\ever' "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "in-place update with existing assignment keeps contents and returns 99" {
-    run updateAssignment --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -99 updateAssignment --in-place --lhs foo --rhs bar "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with existing assignment returns 99" {
-    run updateAssignment --test-only --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -99 updateAssignment --test-only --lhs foo --rhs bar "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }

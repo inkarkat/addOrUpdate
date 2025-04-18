@@ -3,18 +3,20 @@
 load temp
 
 @test "update with nonexisting assignment appends at the end" {
-    run addOrUpdateAssignment --lhs new --rhs add "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
-new=add" ]
+    run -0 addOrUpdateAssignment --lhs new --rhs add "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
+new=add
+EOF
 }
 
 @test "update with assignee containing forward slash updates" {
-    run addOrUpdateAssignment --lhs 'sing/e' --rhs 'whe\reever' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = 'sing/e=whe\reever
+    run -0 addOrUpdateAssignment --lhs 'sing/e' --rhs 'whe\reever' "$FILE"
+    assert_output - <<'EOF'
+sing/e=whe\reever
 foo=bar
 foo=hoo bar baz
 # SECTION
-fox=hi' ]
+fox=hi
+EOF
 }

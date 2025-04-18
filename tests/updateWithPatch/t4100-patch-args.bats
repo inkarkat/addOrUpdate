@@ -4,9 +4,9 @@ load temp
 load subdir
 
 @test "ifdef patch argument is passed through" {
-    run updateWithPatch --ifdef PATCHED "$PATCH"
-    [ $status -eq 0 ]
-    [ "$output" = "#ifdef PATCHED
+    run -0 updateWithPatch --ifdef PATCHED "$PATCH"
+    assert_output - <<'EOF'
+#ifdef PATCHED
 new first line
 #endif
 first line
@@ -19,12 +19,12 @@ third line
 #ifndef PATCHED
 second-to-last line
 #endif
-last line" ]
+last line
+EOF
 }
 
 @test "in-place -p0 argument is passed through" {
-    run updateWithPatch --in-place -p1 <(subdirPatchTarget "$PATCH")
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$RESULT"
+    run -0 updateWithPatch --in-place -p1 <(subdirPatchTarget "$PATCH")
+    assert_output ''
+    diff -y "$FILE" "$RESULT"
 }

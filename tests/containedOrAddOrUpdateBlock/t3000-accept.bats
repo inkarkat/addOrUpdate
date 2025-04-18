@@ -4,17 +4,17 @@ load temp
 
 @test "asks, appends, and returns 0 if the update is accepted by the user" {
     export MEMOIZEDECISION_CHOICE=y
-    run containedOrAddOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$FILE"
-    [ $status -eq 0 ]
-    [[ "$output" =~ does\ not\ yet\ contain\ test\.\ Shall\ I\ update\ it\? ]]
-    [ "$(cat "$FILE")" = "$(cat "$FRESH")
-$BLOCK" ]
+    run -0 containedOrAddOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$FILE"
+    assert_output -p 'does not yet contain test. Shall I update it?'
+    diff -y - --label expected "$FILE" <<EOF
+$(cat "$FRESH")
+$BLOCK
+EOF
 }
 
 @test "asks, updates, and returns 0 if the update is accepted by the user" {
     export MEMOIZEDECISION_CHOICE=y
-    run containedOrAddOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$FILE3"
-    [ $status -eq 0 ]
-    [[ "$output" =~ does\ not\ yet\ contain\ test\.\ Shall\ I\ update\ it\? ]]
-    [ "$(cat "$FILE3")" = "$BLOCK" ]
+    run -0 containedOrAddOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$FILE3"
+    assert_output -p 'does not yet contain test. Shall I update it?'
+    assert_equal "$(<"$FILE3")" "$BLOCK"
 }

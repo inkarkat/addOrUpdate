@@ -3,45 +3,43 @@
 load temp
 
 @test "update of file containing only the identical block returns 99" {
-    run addOrUpdateBlock --marker test --block-text "$TEXT" "${BATS_TEST_DIRNAME}/only-block.txt"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "${BATS_TEST_DIRNAME}/only-block.txt")" ]
+    run -99 addOrUpdateBlock --marker test --block-text "$TEXT" "${BATS_TEST_DIRNAME}/only-block.txt"
+    assert_output - < "${BATS_TEST_DIRNAME}/only-block.txt"
 }
 
 @test "in-place update of file containing only the identical block returns 99" {
     cp "${BATS_TEST_DIRNAME}/only-block.txt" "$NONE"
-    run addOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$NONE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "${BATS_TEST_DIRNAME}/only-block.txt" "$NONE"
+    run -99 addOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$NONE"
+    assert_output ''
+    diff -y "${BATS_TEST_DIRNAME}/only-block.txt" "$NONE"
 }
 
 @test "update of file with the identical block ending on the add-before line returns 99" {
-    run addOrUpdateBlock --marker test --block-text 'Final testing' --add-before 4 "$FILE4"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$LAST")" ]
+    run -99 addOrUpdateBlock --marker test --block-text 'Final testing' --add-before 4 "$FILE4"
+    assert_output - < "$LAST"
 }
 
 @test "in-place update of file with the identical block ending on the add-before line returns 99" {
-    run addOrUpdateBlock --in-place --marker test --block-text 'Final testing' --add-before 4 "$FILE4"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "$LAST" "$FILE4"
+    run -99 addOrUpdateBlock --in-place --marker test --block-text 'Final testing' --add-before 4 "$FILE4"
+    assert_output ''
+    diff -y "$LAST" "$FILE4"
 }
 
 @test "update of file containing only a different block updates it" {
-    run addOrUpdateBlock --marker test --block-text new-stuff "${BATS_TEST_DIRNAME}/only-block.txt"
-    [ $status -eq 0 ]
-    [ "$output" = "# BEGIN test
+    run -0 addOrUpdateBlock --marker test --block-text new-stuff "${BATS_TEST_DIRNAME}/only-block.txt"
+    assert_output - <<'EOF'
+# BEGIN test
 new-stuff
-# END test" ]
+# END test
+EOF
 }
 
 @test "update of file containing only a block with a different marker appends the block" {
-    run addOrUpdateBlock --marker different --block-text new-stuff "${BATS_TEST_DIRNAME}/only-block.txt"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "${BATS_TEST_DIRNAME}/only-block.txt")
+    run -0 addOrUpdateBlock --marker different --block-text new-stuff "${BATS_TEST_DIRNAME}/only-block.txt"
+    assert_output - <<EOF
+$(cat "${BATS_TEST_DIRNAME}/only-block.txt")
 # BEGIN different
 new-stuff
-# END different" ]
+# END different
+EOF
 }

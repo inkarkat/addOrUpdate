@@ -3,21 +3,21 @@
 load temp
 
 @test "update in first existing file skips nonexisting files" {
-    run updateBlock --in-place --marker test --block-text "$TEXT" "$NONE" "$FILE3" "$NONE2" "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ "$(cat "$FILE3")" = "# BEGIN test
+    run -0 updateBlock --in-place --marker test --block-text "$TEXT" "$NONE" "$FILE3" "$NONE2" "$FILE2"
+    assert_output ''
+    diff -y - --label expected "$FILE3" <<EOF
+# BEGIN test
 $TEXT
-# END test" ]
-    cmp "$FILE2" "$EXISTING"
-    [ ! -e "$NONE" ]
-    [ ! -e "$NONE2" ]
+# END test
+EOF
+    diff -y "$FILE2" "$EXISTING"
+    assert_not_exists "$NONE"
+    assert_not_exists "$NONE2"
 }
 
 @test "all nonexisting files returns 4" {
-    run updateBlock --in-place --marker test --block-text "$TEXT" "$NONE" "$NONE2"
-    [ $status -eq 4 ]
-    [ "$output" = "" ]
-    [ ! -e "$NONE" ]
-    [ ! -e "$NONE2" ]
+    run -4 updateBlock --in-place --marker test --block-text "$TEXT" "$NONE" "$NONE2"
+    assert_output ''
+    assert_not_exists "$NONE"
+    assert_not_exists "$NONE2"
 }

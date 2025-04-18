@@ -1,5 +1,7 @@
 #!/bin/bash
 
+load fixture
+
 export TEXT='single-line'
 export BLOCK="# BEGIN test
 $TEXT

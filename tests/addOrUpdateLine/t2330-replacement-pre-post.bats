@@ -6,11 +6,13 @@ load temp
     PRELINE='/new&header\'
     POSTLINE='\new&footer/'
     run addOrUpdateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --line "foo=new" --update-match 'oo=h[a-z]\+' --replacement "ox=replaced" "$FILE"
-    [ "$output" = "sing/e=wha\\ever
+    assert_output - <<EOF
+sing/e=wha\\ever
 foo=bar
 $PRELINE
 fox=replaced bar baz
 $POSTLINE
 # SECTION
-foo=hi" ]
+foo=hi
+EOF
 }

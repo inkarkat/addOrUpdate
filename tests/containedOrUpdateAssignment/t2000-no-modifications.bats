@@ -3,51 +3,38 @@
 load temp
 
 @test "does not modify the file if the file already contains the assignment" {
-    init
     run containedOrUpdateAssignment --in-place --lhs foo --rhs bar "$FILE"
-    cmp -- "$INPUT" "$FILE"
+    diff -y "$INPUT" "$FILE"
 }
 
 @test "returns 1 and error message if the file does not have such an assignment" {
-    init
-    run containedOrUpdateAssignment --in-place --lhs "nowhereToBeFound" --rhs bar "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$FILE does not match; no update possible." ]
+    run -1 containedOrUpdateAssignment --in-place --lhs "nowhereToBeFound" --rhs bar "$FILE"
+    assert_output "$FILE does not match; no update possible."
 }
 
 @test "returns 99 and error message if the file already contains the assignment" {
-    init
-    run containedOrUpdateAssignment --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$FILE already contains 'foo=bar'; no update necessary." ]
+    run -99 containedOrUpdateAssignment --in-place --lhs foo --rhs bar "$FILE"
+    assert_output "$FILE already contains 'foo=bar'; no update necessary."
 }
 
 @test "returns 99 and error message mentioning the name if the file already contains the assignment" {
-    init
-    NAME="My test file"
-    run containedOrUpdateAssignment --in-place --name "$NAME" --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$NAME already contains 'foo=bar'; no update necessary." ]
+    NAME='My test file'
+    run -99 containedOrUpdateAssignment --in-place --name "$NAME" --lhs foo --rhs bar "$FILE"
+    assert_output "$NAME already contains 'foo=bar'; no update necessary."
 }
 
 @test "returns 99 and no error message with an empty one passed if the file already contains the assignment" {
-    init
-    run containedOrUpdateAssignment --up-to-date-message '' --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
+    run -99 containedOrUpdateAssignment --up-to-date-message '' --in-place --lhs foo --rhs bar "$FILE"
+    assert_output ''
 }
 
 @test "returns 99 and a custom passed message if the file already contains the assignment" {
-    init
     MESSAGE='The file already has the bar.'
-    run containedOrUpdateAssignment --up-to-date-message "$MESSAGE" --in-place --lhs foo --rhs bar "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$MESSAGE" ]
+    run -99 containedOrUpdateAssignment --up-to-date-message "$MESSAGE" --in-place --lhs foo --rhs bar "$FILE"
+    assert_output "$MESSAGE"
 }
 
 @test "returns 4 if none of the passed files exist" {
-    init
-    run containedOrUpdateAssignment --in-place --lhs foo --rhs bar "$NONE" "$NONE2"
-    [ $status -eq 4 ]
-    [ "$output" = "" ]
+    run -4 containedOrUpdateAssignment --in-place --lhs foo --rhs bar "$NONE" "$NONE2"
+    assert_output ''
 }

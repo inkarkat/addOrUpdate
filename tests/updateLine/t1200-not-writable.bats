@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+load fixture
+
 setup()
 {
     IMMUTABLE_DIRSPEC="${BATS_TMPDIR}/immutable"
@@ -12,9 +14,8 @@ setup()
 
 @test "updating existing file in not-writable dir returns 5" {
     ls -l "$IMMUTABLE_DIR_FILESPEC"
-    run updateLine --in-place --update-match root --replacement '&&' "$IMMUTABLE_DIR_FILESPEC"
-    [ $status -eq 5 ]
-    [ "${#lines[@]}" -eq 1 ]
-    [[ "$output" =~ ^sed: ]]
+    run -5 updateLine --in-place --update-match root --replacement '&&' "$IMMUTABLE_DIR_FILESPEC"
+    assert_equal ${#lines[@]} 1
+    assert_output -e '^sed:'
 }
 

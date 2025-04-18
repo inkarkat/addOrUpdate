@@ -3,15 +3,13 @@
 load temp
 
 @test "error when no PATCH passed" {
-    run containedOrUpdateWithPatch
-    [ $status -eq 2 ]
-    [ "${lines[0]}" = "ERROR: No PATCH passed." ]
-    [ "${lines[1]%% *}" = "Usage:" ]
+    run -2 containedOrUpdateWithPatch
+    assert_line -n 0 'ERROR: No PATCH passed.'
+    assert_line -n 1 -e '^Usage:'
 }
 
 @test "error when combining --first and --all" {
-    run containedOrUpdateWithPatch --first --all "$PATCH"
-    [ $status -eq 2 ]
-    [ "${lines[0]}" = "ERROR: Cannot combine --first and --all." ]
-    [ "${lines[1]%% *}" = "Usage:" ]
+    run -2 containedOrUpdateWithPatch --first --all "$PATCH"
+    assert_line -n 0 'ERROR: Cannot combine --first and --all.'
+    assert_line -n 1 -e '^Usage:'
 }

@@ -3,26 +3,27 @@
 load temp
 
 @test "update in all existing files skips nonexisting files" {
-    run addOrUpdateWithSed --all --in-place $SED_UPDATE -- "$NONE" "$FILE" "$NONE2" "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ "$(cat "$FILE")" = "updated
+    run -0 addOrUpdateWithSed --all --in-place $SED_UPDATE -- "$NONE" "$FILE" "$NONE2" "$FILE2"
+    assert_output ''
+    diff -y - --label expected "$FILE" <<'EOF'
+updated
 foo=bar
 foo=hoo bar baz
 # SECTION
-foo=hi" ]
-    [ "$(cat "$FILE2")" = "updated
+foo=hi
+EOF
+    diff -y - --label expected "$FILE2" <<'EOF'
+updated
 quux=initial
-foo=moo bar baz" ]
-    [ ! -e "$NONE" ]
-    [ ! -e "$NONE2" ]
+foo=moo bar baz
+EOF
+    assert_not_exists "$NONE"
+    assert_not_exists "$NONE2"
 }
 
 @test "all nonexisting all files returns 4" {
-    UPDATE="foo=new"
-    run addOrUpdateWithSed --all --in-place $SED_UPDATE -- "$NONE" "$NONE2"
-    [ $status -eq 4 ]
-    [ "$output" = "" ]
-    [ ! -e "$NONE" ]
-    [ ! -e "$NONE2" ]
+    run -4 addOrUpdateWithSed --all --in-place $SED_UPDATE -- "$NONE" "$NONE2"
+    assert_output ''
+    assert_not_exists "$NONE"
+    assert_not_exists "$NONE2"
 }

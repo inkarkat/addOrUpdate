@@ -3,10 +3,8 @@
 load temp
 
 @test "asks and returns 98 if the update is declined by the user" {
-    init
-    UPDATE="foo=new"
+    UPDATE='foo=new'
     export MEMOIZEDECISION_CHOICE=n
-    run containedOrAddOrUpdateLine --in-place --line "$UPDATE" "$FILE"
-    [ $status -eq 98 ]
-    [[ "$output" =~ does\ not\ yet\ contain\ \'$UPDATE\'\.\ Shall\ I\ update\ it\? ]]
+    run -98 containedOrAddOrUpdateLine --in-place --line "$UPDATE" "$FILE"
+    assert_output -p "does not yet contain '$UPDATE'. Shall I update it?"
 }

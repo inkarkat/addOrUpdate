@@ -3,13 +3,15 @@
 load temp
 
 @test "update in all existing files skips nonexisting files" {
-    run updateBlock --all --in-place --marker test --block-text "$TEXT" "$NONE" "$FILE3" "$NONE2" "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ "$(cat "$FILE3")" = "# BEGIN test
+    run -0 updateBlock --all --in-place --marker test --block-text "$TEXT" "$NONE" "$FILE3" "$NONE2" "$FILE2"
+    assert_output ''
+    diff -y - --label expected "$FILE3" <<EOF
+# BEGIN test
 $TEXT
-# END test" ]
-    [ "$(cat "$FILE2")" = "first line
+# END test
+EOF
+    diff -y - --label expected "$FILE2" <<EOF
+first line
 second line
 third line
 # BEGIN test
@@ -28,15 +30,15 @@ Somehoe
 
 # BEGIN final and empty
 # END final and empty
-last line" ]
-    [ ! -e "$NONE" ]
-    [ ! -e "$NONE2" ]
+last line
+EOF
+    assert_not_exists "$NONE"
+    assert_not_exists "$NONE2"
 }
 
 @test "all nonexisting all files returns 4" {
-    run updateBlock --all --in-place --marker test --block-text "$TEXT" "$NONE" "$NONE2"
-    [ $status -eq 4 ]
-    [ "$output" = "" ]
-    [ ! -e "$NONE" ]
-    [ ! -e "$NONE2" ]
+    run -4 updateBlock --all --in-place --marker test --block-text "$TEXT" "$NONE" "$NONE2"
+    assert_output ''
+    assert_not_exists "$NONE"
+    assert_not_exists "$NONE2"
 }

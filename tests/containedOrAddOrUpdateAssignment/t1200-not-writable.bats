@@ -1,11 +1,12 @@
 #!/usr/bin/env bats
 
+load fixture
+
 @test "creating a nonexisting file in a nonexisting directory returns 5" {
     TARGET_DIR="${BATS_TMPDIR}/doesNotExist"
     [ ! -e "$TARGET_DIR" ]
     NONEXISTING="${TARGET_DIR}/doesNotExistEither"
     export MEMOIZEDECISION_CHOICE=y
-    run containedOrAddOrUpdateAssignment --create-nonexisting --in-place --lhs foo --rhs new "$NONEXISTING"
-    [ $status -eq 5 ]
-    [[ "$output" =~ /doesNotExist/doesNotExistEither:\ No\ such\ file\ or\ directory$ ]]
+    run -5 containedOrAddOrUpdateAssignment --create-nonexisting --in-place --lhs foo --rhs new "$NONEXISTING"
+    assert_output -e '/doesNotExist/doesNotExistEither: No such file or directory$'
 }

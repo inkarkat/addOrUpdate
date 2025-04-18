@@ -3,57 +3,59 @@
 load temp
 
 @test "processing standard input with creation of nonexisting works" {
-    CONTENTS="# useless
-stuff"
+    CONTENTS='# useless
+stuff'
     output="$(echo "$CONTENTS" | addOrUpdateWithSed --create-nonexisting $SED_UPDATE)"
-    [ "$output" = "updated
-stuff" ]
+    assert_output - <<'EOF'
+updated
+stuff
+EOF
 }
 
 @test "update with nonexisting first file creates and inserts there" {
-    run addOrUpdateWithSed --create-nonexisting --in-place $SED_UPDATE -- "$NONE" "$FILE" "$NONE2" "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ -e "$NONE" ]
-    [ "$(cat "$NONE")" = "updated" ]
-    cmp "$FILE" "$INPUT"
-    cmp "$FILE2" "$MORE2"
-    [ ! -e "$NONE2" ]
+    run -0 addOrUpdateWithSed --create-nonexisting --in-place $SED_UPDATE -- "$NONE" "$FILE" "$NONE2" "$FILE2"
+    assert_output ''
+    assert_exists "$NONE"
+    assert_equal "$(<"$NONE")" "updated"
+    diff -y "$FILE" "$INPUT"
+    diff -y "$FILE2" "$MORE2"
+    assert_not_exists "$NONE2"
 }
 
 @test "update with all nonexisting files creates and inserts in the first one" {
-    run addOrUpdateWithSed --create-nonexisting --in-place $SED_UPDATE -- "$NONE" "$NONE2"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ -e "$NONE" ]
-    [ "$(cat "$NONE")" = "updated" ]
-    [ ! -e "$NONE2" ]
+    run -0 addOrUpdateWithSed --create-nonexisting --in-place $SED_UPDATE -- "$NONE" "$NONE2"
+    assert_output ''
+    assert_exists "$NONE"
+    assert_equal "$(<"$NONE")" "updated"
+    assert_not_exists "$NONE2"
 }
 
 @test "update with nonexisting files and --all creates and inserts in each" {
-    run addOrUpdateWithSed --create-nonexisting --all --in-place $SED_UPDATE -- "$NONE" "$FILE" "$NONE2" "$FILE2"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ -e "$NONE" ]
-    [ -e "$NONE2" ]
-    [ "$(cat "$NONE")" = "updated" ]
-    [ "$(cat "$NONE2")" = "updated" ]
-    [ "$(cat "$FILE")" = "updated
+    run -0 addOrUpdateWithSed --create-nonexisting --all --in-place $SED_UPDATE -- "$NONE" "$FILE" "$NONE2" "$FILE2"
+    assert_output ''
+    assert_exists "$NONE"
+    assert_exists "$NONE2"
+    assert_equal "$(<"$NONE")" "updated"
+    assert_equal "$(<"$NONE2")" "updated"
+    diff -y - --label expected "$FILE" <<'EOF'
+updated
 foo=bar
 foo=hoo bar baz
 # SECTION
-foo=hi" ]
-    [ "$(cat "$FILE2")" = "updated
+foo=hi
+EOF
+    diff -y - --label expected "$FILE2" <<'EOF'
+updated
 quux=initial
-foo=moo bar baz" ]
+foo=moo bar baz
+EOF
 }
 
 @test "update with all nonexisting files and --all creates and inserts in each" {
-    run addOrUpdateWithSed --create-nonexisting --all --in-place $SED_UPDATE -- "$NONE" "$NONE2"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ -e "$NONE" ]
-    [ -e "$NONE2" ]
-    [ "$(cat "$NONE")" = "updated" ]
-    [ "$(cat "$NONE2")" = "updated" ]
+    run -0 addOrUpdateWithSed --create-nonexisting --all --in-place $SED_UPDATE -- "$NONE" "$NONE2"
+    assert_output ''
+    assert_exists "$NONE"
+    assert_exists "$NONE2"
+    assert_equal "$(<"$NONE")" "updated"
+    assert_equal "$(<"$NONE2")" "updated"
 }

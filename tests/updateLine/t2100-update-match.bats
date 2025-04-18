@@ -3,38 +3,39 @@
 load temp
 
 @test "update with nonmatching pattern returns 1" {
-    UPDATE="foo=new"
-    run updateLine --update-match "foosball=never" --line new "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -1 updateLine --update-match "foosball=never" --line new "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "update with literal-like pattern updates first matching line" {
-    run updateLine --update-match "foo=h.*" --line "foo=new" "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = 'sing/e=wha\ever
+    run -0 updateLine --update-match "foo=h.*" --line "foo=new" "$FILE"
+    assert_output - <<'EOF'
+sing/e=wha\ever
 foo=bar
 foo=new
 # SECTION
-foo=hi' ]
+foo=hi
+EOF
 }
 
 @test "update with anchored pattern updates first matching line" {
-    run updateLine --update-match "^fo\+=[ghi].*$" --line "foo=new" "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = 'sing/e=wha\ever
+    run -0 updateLine --update-match "^fo\+=[ghi].*$" --line "foo=new" "$FILE"
+    assert_output - <<'EOF'
+sing/e=wha\ever
 foo=bar
 foo=new
 # SECTION
-foo=hi' ]
+foo=hi
+EOF
 }
 
 @test "update with pattern containing forward and backslash updates first matching line" {
-    run updateLine --update-match '^.*/.=.*\\.*' --replacement 'foo=/e\\' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = 'foo=/e\
+    run -0 updateLine --update-match '^.*/.=.*\\.*' --replacement 'foo=/e\\' "$FILE"
+    assert_output - <<'EOF'
+foo=/e\
 foo=bar
 foo=hoo bar baz
 # SECTION
-foo=hi' ]
+foo=hi
+EOF
 }

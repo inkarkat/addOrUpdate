@@ -3,9 +3,8 @@
 load temp
 
 @test "in-place patching with backup extension updates the file and writes backup" {
-    run updateWithPatch --in-place=.bak "$PATCH"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$RESULT"
-    cmp "$EXISTING" "${FILE}.bak"
+    run -0 updateWithPatch --in-place=.bak "$PATCH"
+    assert_output ''
+    diff -y "$FILE" "$RESULT"
+    diff -y "$EXISTING" "${FILE}.bak"
 }

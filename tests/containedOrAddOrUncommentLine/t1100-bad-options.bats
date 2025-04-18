@@ -1,7 +1,6 @@
 #!/usr/bin/env bats
 
 load fixture
-load temp
 
 @test "error when no LINE passed" {
     run -2 containedOrAddOrUncommentLine "$FILE"

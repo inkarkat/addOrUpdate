@@ -3,71 +3,66 @@
 load temp
 
 @test "update first line succeeds" {
-    UPDATE="foo=new"
-    run addOrUpdateWithSed $SED_UPDATE -- "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "updated
+    UPDATE='foo=new'
+    run -0 addOrUpdateWithSed $SED_UPDATE -- "$FILE"
+    assert_output - <<'EOF'
+updated
 foo=bar
 foo=hoo bar baz
 # SECTION
-foo=hi" ]
+foo=hi
+EOF
 }
 
 @test "update with error returns 1" {
-    run addOrUpdateWithSed $SED_ERROR -- "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -1 addOrUpdateWithSed $SED_ERROR -- "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "update with no modification returns 99" {
-    run addOrUpdateWithSed $SED_NO_MOD -- "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -99 addOrUpdateWithSed $SED_NO_MOD -- "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "in-place update of first line succeeds" {
-    UPDATE="foo=new"
-    run addOrUpdateWithSed --in-place $SED_UPDATE -- "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    [ "$(cat "$FILE")" = "updated
+    UPDATE='foo=new'
+    run -0 addOrUpdateWithSed --in-place $SED_UPDATE -- "$FILE"
+    assert_output ''
+    diff -y - --label expected "$FILE" <<'EOF'
+updated
 foo=bar
 foo=hoo bar baz
 # SECTION
-foo=hi" ]
+foo=hi
+EOF
 }
 
 @test "in-place update with error returns 1" {
-    run addOrUpdateWithSed --in-place $SED_ERROR -- "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -1 addOrUpdateWithSed --in-place $SED_ERROR -- "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "in-place update with no modification returns 99" {
-    run addOrUpdateWithSed --in-place $SED_NO_MOD -- "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -99 addOrUpdateWithSed --in-place $SED_NO_MOD -- "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with update of first line succeeds" {
-    run addOrUpdateWithSed --test-only $SED_UPDATE -- "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -0 addOrUpdateWithSed --test-only $SED_UPDATE -- "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with error returns 1" {
-    run addOrUpdateWithSed --test-only $SED_ERROR -- "$FILE"
-    [ $status -eq 1 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -1 addOrUpdateWithSed --test-only $SED_ERROR -- "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with no modification returns 99" {
-    run addOrUpdateWithSed --test-only $SED_NO_MOD -- "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    run -99 addOrUpdateWithSed --test-only $SED_NO_MOD -- "$FILE"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }

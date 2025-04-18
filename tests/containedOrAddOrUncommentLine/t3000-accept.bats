@@ -6,7 +6,7 @@ load temp
     UPDATE='new'
     export MEMOIZEDECISION_CHOICE=y
     run -0 containedOrAddOrUncommentLine --in-place --line "$UPDATE" "$FILE"
-    assert_output -e "does not yet contain '$UPDATE'. Shall I update it?"
+    assert_output -p "does not yet contain '$UPDATE'. Shall I update it?"
     diff -y - --label expected "$FILE" <<EOF
 $(cat "$INPUT")
 $UPDATE
@@ -17,7 +17,7 @@ EOF
     UPDATE='disabled'
     export MEMOIZEDECISION_CHOICE=y
     run -0 containedOrAddOrUncommentLine --in-place --line "$UPDATE" "$FILE"
-    assert_output -e "does not yet contain '$UPDATE'. Shall I update it?"
+    assert_output -p "does not yet contain '$UPDATE'. Shall I update it?"
     diff -y - --label expected "$FILE" <<EOF
 # line
 line

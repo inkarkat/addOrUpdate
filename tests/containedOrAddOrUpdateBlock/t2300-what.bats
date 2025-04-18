@@ -6,11 +6,11 @@ load temp
     WHAT='my secret sauce'
     export MEMOIZEDECISION_CHOICE=n
     run containedOrAddOrUpdateBlock --what "$WHAT" --marker test --block-text new "$FILE2"
-    [[ "$output" =~ does\ not\ yet\ contain\ $WHAT\.\ Shall\ I\ update\ it\? ]]
+    assert_output -p "does not yet contain $WHAT. Shall I update it?"
 }
 
 @test "asks with default unnamed block" {
     export MEMOIZEDECISION_CHOICE=n
     run containedOrAddOrUpdateBlock --begin-marker '# BEGIN test' --end-marker '# END test' --block-text new "$FILE2"
-    [[ "$output" =~ does\ not\ yet\ contain\ the\ block\.\ Shall\ I\ update\ it\? ]]
+    assert_output -p 'does not yet contain the block. Shall I update it?'
 }

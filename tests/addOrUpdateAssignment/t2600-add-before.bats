@@ -3,51 +3,54 @@
 load temp
 
 @test "update with nonexisting assignment inserts on the passed line" {
-    run addOrUpdateAssignment --lhs new --rhs add --add-before 4 "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "sing/e=wha\\ever
+    run -0 addOrUpdateAssignment --lhs new --rhs add --add-before 4 "$FILE"
+    assert_output - <<'EOF'
+sing/e=wha\ever
 foo=bar
 foo=hoo bar baz
 new=add
 # SECTION
-fox=hi" ]
+fox=hi
+EOF
 }
 
 @test "update with nonexisting assignment inserts on the passed ADDRESS" {
-    run addOrUpdateAssignment --lhs new --rhs add --add-before '/^#/' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "sing/e=wha\\ever
+    run -0 addOrUpdateAssignment --lhs new --rhs add --add-before '/^#/' "$FILE"
+    assert_output - <<'EOF'
+sing/e=wha\ever
 foo=bar
 foo=hoo bar baz
 new=add
 # SECTION
-fox=hi" ]
+fox=hi
+EOF
 }
 
 @test "update with nonexisting assignment inserts on the first match of ADDRESS only" {
-    run addOrUpdateAssignment --lhs new --rhs add --add-before '/^foo=/' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "sing/e=wha\\ever
+    run -0 addOrUpdateAssignment --lhs new --rhs add --add-before '/^foo=/' "$FILE"
+    assert_output - <<'EOF'
+sing/e=wha\ever
 new=add
 foo=bar
 foo=hoo bar baz
 # SECTION
-fox=hi" ]
+fox=hi
+EOF
 }
 
 @test "update with existing assignment on the passed line keeps contents and returns 99" {
-    run addOrUpdateAssignment --lhs foo --rhs bar --add-before 2 "$FILE"
-    [ $status -eq 99 ]
-    [ "$output" = "$(cat "$INPUT")" ]
+    run -99 addOrUpdateAssignment --lhs foo --rhs bar --add-before 2 "$FILE"
+    assert_output - < "$INPUT"
 }
 
 @test "update with existing assignment one before the passed line keeps contents and returns 99" {
-    run addOrUpdateAssignment --lhs foo --rhs bar --add-before 1 "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "foo=bar
-sing/e=wha\\ever
+    run -0 addOrUpdateAssignment --lhs foo --rhs bar --add-before 1 "$FILE"
+    assert_output - <<'EOF'
+foo=bar
+sing/e=wha\ever
 foo=bar
 foo=hoo bar baz
 # SECTION
-fox=hi" ]
+fox=hi
+EOF
 }

@@ -3,22 +3,19 @@
 load temp
 
 @test "patching prints the result and keeps the original intact" {
-    run updateWithPatch "$PATCH"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$RESULT")" ]
-    cmp "$EXISTING" "$FILE"
+    run -0 updateWithPatch "$PATCH"
+    assert_output - < "$RESULT"
+    diff -y "$EXISTING" "$FILE"
 }
 
 @test "in-place patching updates the file" {
-    run updateWithPatch --in-place "$PATCH"
-    [ $status -eq 0 ]
-    [ "$output" = "" ]
-    cmp "$FILE" "$RESULT"
+    run -0 updateWithPatch --in-place "$PATCH"
+    assert_output ''
+    diff -y "$FILE" "$RESULT"
 }
 
 @test "patching with custom patch arguments" {
-    run updateWithPatch -p0 --unified --follow-symlinks -El "$PATCH"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$RESULT")" ]
-    cmp "$EXISTING" "$FILE"
+    run -0 updateWithPatch -p0 --unified --follow-symlinks -El "$PATCH"
+    assert_output - < "$RESULT"
+    diff -y "$EXISTING" "$FILE"
 }

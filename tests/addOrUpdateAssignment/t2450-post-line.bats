@@ -3,41 +3,44 @@
 load temp
 
 @test "append with one post line" {
-    POSTLINE="# new footer"
-    run addOrUpdateAssignment --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
+    POSTLINE='# new footer'
+    run -0 addOrUpdateAssignment --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
 new=add
-$POSTLINE" ]
+$POSTLINE
+EOF
 }
 
 @test "append with three separate post lines" {
-    POSTLINE1="# first footer"
+    POSTLINE1='# first footer'
     POSTLINE2=''
-    POSTLINE3="# third footer"
-    run addOrUpdateAssignment --post-line "$POSTLINE1" --post-line "$POSTLINE2" --post-line "$POSTLINE3" --lhs new --rhs add "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
+    POSTLINE3='# third footer'
+    run -0 addOrUpdateAssignment --post-line "$POSTLINE1" --post-line "$POSTLINE2" --post-line "$POSTLINE3" --lhs new --rhs add "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
 new=add
 $POSTLINE1
 $POSTLINE2
-$POSTLINE3" ]
+$POSTLINE3
+EOF
 }
 
 @test "append with one multi-line post line" {
-    POSTLINE="# first footer
+    POSTLINE='# first footer
 
-# third footer"
-    POSTLINE1="# first footer"
+# third footer'
+    POSTLINE1='# first footer'
     POSTLINE2=''
-    POSTLINE3="# third footer"
-    run addOrUpdateAssignment --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
+    POSTLINE3='# third footer'
+    run -0 addOrUpdateAssignment --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
 new=add
 $POSTLINE1
 $POSTLINE2
-$POSTLINE3" ]
+$POSTLINE3
+EOF
 }
 
 addOrUpdateLineWithPeriod()
@@ -45,20 +48,22 @@ addOrUpdateLineWithPeriod()
     addOrUpdateAssignment "$@"; printf .
 }
 @test "empty post line" {
-    run addOrUpdateLineWithPeriod --post-line '' --lhs new --rhs add "$FILE"
-    [ $status -eq 0 ]
-    [ "${output}" = "$(cat "$INPUT")
+    run -0 addOrUpdateLineWithPeriod --post-line '' --lhs new --rhs add "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
 new=add
 
-." ]
+.
+EOF
 }
 
 @test "single space post line" {
-    POSTLINE=" "
-    run addOrUpdateLineWithPeriod --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
-    [ $status -eq 0 ]
-    [ "${output}" = "$(cat "$INPUT")
+    POSTLINE=' '
+    run -0 addOrUpdateLineWithPeriod --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
 new=add
 ${POSTLINE}
-." ]
+.
+EOF
 }

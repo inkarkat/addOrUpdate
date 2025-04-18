@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+load fixture
+
 setup()
 {
     IMMUTABLE_DIRSPEC="${BATS_TMPDIR}/immutable"
@@ -12,28 +14,25 @@ setup()
 
 @test "updating existing file in not-writable dir returns 5" {
     IMMUTABLE='/etc/hosts'
-    [ -e "$IMMUTABLE" -a ! -w "$IMMUTABLE" ]
-    run addOrUpdateLine --in-place --line "foo=new" "$IMMUTABLE"
-    [ $status -eq 5 ]
-    [ "${#lines[@]}" -eq 1 ]
-    [[ "$output" =~ ^sed: ]]
+    assert_exists "$IMMUTABLE" -a ! -w "$IMMUTABLE"
+    run -5 addOrUpdateLine --in-place --line "foo=new" "$IMMUTABLE"
+    assert_equal ${#lines[@]} 1
+    assert_output -e '^sed:'
 }
 
 @test "creating a nonexisting file in a non-writable directory returns 5" {
     IMMUTABLE_NEW="${IMMUTABLE_DIRSPEC}/doesNotExist"
-    [ ! -e "$IMMUTABLE_NEW" ]
-    run addOrUpdateLine --create-nonexisting --in-place --line "foo=new" "$IMMUTABLE_NEW"
-    [ $status -eq 5 ]
-    [ "${#lines[@]}" -eq 1 ]
-    [[ "$output" =~ /doesNotExist:\ Permission\ denied$ ]]
+    assert_not_exists "$IMMUTABLE_NEW"
+    run -5 addOrUpdateLine --create-nonexisting --in-place --line "foo=new" "$IMMUTABLE_NEW"
+    assert_equal ${#lines[@]} 1
+    assert_output -e '/doesNotExist: Permission denied$'
 }
 
 @test "creating a nonexisting file in a nonexisting directory returns 5" {
     TARGET_DIR="${BATS_TMPDIR}/doesNotExist"
-    [ ! -e "$TARGET_DIR" ]
+    assert_not_exists "$TARGET_DIR"
     NONEXISTING="${TARGET_DIR}/doesNotExistEither"
-    run addOrUpdateLine --create-nonexisting --in-place --line "foo=new" "$NONEXISTING"
-    [ $status -eq 5 ]
-    [ "${#lines[@]}" -eq 1 ]
-    [[ "$output" =~ /doesNotExist/doesNotExistEither:\ No\ such\ file\ or\ directory$ ]]
+    run -5 addOrUpdateLine --create-nonexisting --in-place --line "foo=new" "$NONEXISTING"
+    assert_equal ${#lines[@]} 1
+    assert_output -e '/doesNotExist/doesNotExistEither: No such file or directory$'
 }

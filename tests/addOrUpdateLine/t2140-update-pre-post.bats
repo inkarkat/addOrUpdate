@@ -7,11 +7,13 @@ load temp
     UPDATE="foo=new"
     POSTLINE='\new&footer/'
     run addOrUpdateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --line "$UPDATE" --update-match "foo=h" "$FILE"
-    [ "$output" = "sing/e=wha\\ever
+    assert_output - <<EOF
+sing/e=wha\\ever
 foo=bar
 $PRELINE
 $UPDATE
 $POSTLINE
 # SECTION
-foo=hi" ]
+foo=hi
+EOF
 }

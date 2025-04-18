@@ -3,20 +3,22 @@
 load temp
 
 @test "update with nonexisting assignment appends multi-line at the end" {
-    run addOrAppendAssignment --lhs new --rhs $'multi\nline' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = "$(cat "$INPUT")
-new=\"multi
-line\"" ]
+    run -0 addOrAppendAssignment --lhs new --rhs $'multi\nline' "$FILE"
+    assert_output - <<EOF
+$(cat "$INPUT")
+new="multi
+line"
+EOF
 }
 
 @test "update with value of multiple lines" {
-    run addOrAppendAssignment --lhs foo --rhs $'multi\nline' "$FILE"
-    [ $status -eq 0 ]
-    [ "$output" = 'sing/e="wha\ever"
+    run -0 addOrAppendAssignment --lhs foo --rhs $'multi\nline' "$FILE"
+    assert_output - <<'EOF'
+sing/e="wha\ever"
 foo="bar multi
 line"
 foo="hoo bar baz"
 # SECTION
-fox="hi there"' ]
+fox="hi there"
+EOF
 }

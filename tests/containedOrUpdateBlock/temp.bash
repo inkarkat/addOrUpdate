@@ -1,5 +1,7 @@
 #!/bin/bash
 
+load fixture
+
 export XDG_CONFIG_HOME="${BATS_TMPDIR}"
 
 export TEXT='single-line'
