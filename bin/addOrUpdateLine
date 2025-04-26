@@ -20,7 +20,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before|-add-after ADDRESS] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before|--add-after ADDRESS] [--skip ADDRESS [--skip ...]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -62,6 +62,7 @@ HELPDESCRIPTION
     --add-after ADDRESS	    Do the update after ADDRESS instead of at the end of
 			    the FILE. Any existing lines that follow that line
 			    won't be considered!
+    --skip ADDRESS	    Ignore any lines at ADDRESS (can also be a range).
     --line|-l LINE	    Search for (literal, full) LINE and add LINE if that
 			    doesn't exist yet.
     --accept-match|-a ACCEPT-PATTERN
@@ -117,6 +118,7 @@ unset updatePreLines
 unset updatePostLines
 addBeforeAddress=
 addAfterAddress=
+typeset -a sedSkipAddressesArgs=()
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -139,6 +141,7 @@ do
 	--post-update)	    shift; updatePostLines+="${updatePostLines:+\\n}$(literalReplacement "$1")"; shift;;
 	--add-before)	    shift; addBeforeAddress="$1"; shift;;
 	--add-after)	    shift; addAfterAddress="$1"; shift;;
+	--skip)		    shift; sedSkipAddressesArgs+=(-e "${1:?}b last"); shift;;
 	--)		    shift; break;;
 	-)		    break;;
 	-*)		    { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
@@ -218,8 +221,9 @@ process()
     local isAppend="$1"; shift; [ "$ADDORUPDATELINE_NO_APPEND" ] && isAppend=
     local filespec="$1"; shift
 
-    typeset -a sedProgram=()
-    if [ "$acceptMatch" ]; then
+    typeset -a sedProgram=("${sedSkipAddressesArgs[@]}")
+
+    if [ -n "$acceptMatch" ]; then
 	sedProgram+=(
 	    # If ACCEPT-PATTERN matches, put a newline (as that can never be
 	    # matched as PATTERN, and is easier to write than LINE) into the
