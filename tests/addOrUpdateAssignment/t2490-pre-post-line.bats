@@ -11,7 +11,7 @@ stuff'
 
 stuff'
     POSTLINE2='# new footer'
-    run addOrUpdateAssignment --pre-line "$PRELINE1" --post-line "$POSTLINE1" --pre-line "$PRELINE2" --post-line "$POSTLINE2" --lhs new --rhs add "$FILE"
+    run -0 addOrUpdateAssignment --pre-line "$PRELINE1" --post-line "$POSTLINE1" --pre-line "$PRELINE2" --post-line "$POSTLINE2" --lhs new --rhs add "$FILE"
     assert_output - <<EOF
 $(cat "$INPUT")
 $PRELINE1
@@ -25,7 +25,7 @@ EOF
 @test "append with pre and post lines that contain backslashes" {
     PRELINE='/new header\'
     POSTLINE='\new footer/'
-    run addOrUpdateAssignment --pre-line "$PRELINE" --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
+    run -0 addOrUpdateAssignment --pre-line "$PRELINE" --post-line "$POSTLINE" --lhs new --rhs add "$FILE"
     assert_output - <<EOF
 $(cat "$INPUT")
 $PRELINE
@@ -43,7 +43,7 @@ stuff'
 
 stuff'
     POSTLINE2='# new footer'
-    run addOrUpdateAssignment --pre-line "$PRELINE1" --post-line "$POSTLINE1" --pre-line "$PRELINE2" --post-line "$POSTLINE2" --pre-update "# not in" --post-update '# also not'  --lhs new --rhs add "$FILE"
+    run -0 addOrUpdateAssignment --pre-line "$PRELINE1" --post-line "$POSTLINE1" --pre-line "$PRELINE2" --post-line "$POSTLINE2" --pre-update "# not in" --post-update '# also not'  --lhs new --rhs add "$FILE"
     assert_output - <<EOF
 $(cat "$INPUT")
 $PRELINE1

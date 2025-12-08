@@ -5,28 +5,28 @@ load temp
 @test "message with single file" {
     UPDATE='foo=new'
     export MEMOIZEDECISION_CHOICE=y
-    run containedOrAddOrUpdateLine --in-place --line "$UPDATE" "$FILE"
+    run -0 containedOrAddOrUpdateLine --in-place --line "$UPDATE" "$FILE"
     assert_output -p "does not yet contain '$UPDATE'. Shall I update it?"
 }
 
 @test "message with multiple files" {
     UPDATE='foo=new'
     export MEMOIZEDECISION_CHOICE=y
-    run containedOrAddOrUpdateLine --in-place --line "$UPDATE" "$FILE" "$FILE2" "$FILE3"
+    run -0 containedOrAddOrUpdateLine --in-place --line "$UPDATE" "$FILE" "$FILE2" "$FILE3"
     assert_output -e "At least one of .* does not yet contain '$UPDATE'\\. Shall I update it\\?"
 }
 
 @test "--all message with single file" {
     UPDATE='foo=new'
     export MEMOIZEDECISION_CHOICE=y
-    run containedOrAddOrUpdateLine --all --in-place --line "$UPDATE" "$FILE"
+    run -0 containedOrAddOrUpdateLine --all --in-place --line "$UPDATE" "$FILE"
     assert_output -p "does not yet contain '$UPDATE'. Shall I update it?"
 }
 
 @test "--all message with multiple files" {
     UPDATE='foo=new'
     export MEMOIZEDECISION_CHOICE=y
-    run containedOrAddOrUpdateLine --all --in-place --line "$UPDATE" "$FILE" "$FILE2" "$FILE3"
+    run -0 containedOrAddOrUpdateLine --all --in-place --line "$UPDATE" "$FILE" "$FILE2" "$FILE3"
     assert_output -e "All of .* do not yet contain '$UPDATE'\\. Shall I update them\\?"
 }
 

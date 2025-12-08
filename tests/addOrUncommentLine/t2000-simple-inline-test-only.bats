@@ -68,7 +68,7 @@ EOF
 @test "in-place update with existing line keeps contents and returns 99" {
     run -99 addOrUncommentLine --in-place --line "some data" "$FILE"
     assert_output ''
-    cmp "$FILE" "$INPUT"
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "in-place update with commented-out line uncomments" {
@@ -89,17 +89,17 @@ EOF
     UPDATE="new"
     run -0 addOrUncommentLine --test-only --line "$UPDATE" "$FILE"
     assert_output ''
-    cmp "$FILE" "$INPUT"
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with existing line returns 99" {
     run -99 addOrUncommentLine --test-only --line "some data" "$FILE"
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }
 
 @test "test-only update with commented-out line succeeds" {
     run -0 addOrUncommentLine --test-only --line "disabled" "$FILE"
-    [ "$output" = "" ]
-    cmp "$FILE" "$INPUT"
+    assert_output ''
+    diff -y "$FILE" "$INPUT"
 }

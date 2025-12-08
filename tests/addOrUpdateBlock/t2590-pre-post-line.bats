@@ -11,7 +11,7 @@ stuff'
 
 stuff'
     POSTLINE2='# new footer'
-    run addOrUpdateBlock --pre-line "$PRELINE1" --post-line "$POSTLINE1" --pre-line "$PRELINE2" --post-line "$POSTLINE2" --marker test --block-text "$TEXT" "$FILE"
+    run -0 addOrUpdateBlock --pre-line "$PRELINE1" --post-line "$POSTLINE1" --pre-line "$PRELINE2" --post-line "$POSTLINE2" --marker test --block-text "$TEXT" "$FILE"
     assert_output - <<EOF
 $(cat "$FRESH")
 $PRELINE1

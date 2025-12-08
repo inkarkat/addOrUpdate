@@ -5,7 +5,7 @@ load temp
 @test "update with pattern matching partial line uses pre and post lines that contain special characters and REPLACEMENT just for match" {
     PRELINE='/new&header\'
     POSTLINE='\new&footer/'
-    run updateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --update-match 'oo=h[a-z]\+' --replacement "ox=replaced" "$FILE"
+    run -0 updateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --update-match 'oo=h[a-z]\+' --replacement "ox=replaced" "$FILE"
     assert_output - <<EOF
 sing/e=wha\\ever
 foo=bar

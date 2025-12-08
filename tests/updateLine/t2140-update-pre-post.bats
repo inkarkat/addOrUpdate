@@ -6,7 +6,7 @@ load temp
     PRELINE='/new&header\'
     UPDATE='foo=new'
     POSTLINE='\new&footer/'
-    run updateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --update-match "foo=h.*" --line "$UPDATE" "$FILE"
+    run -0 updateLine --pre-update "$PRELINE" --post-update "$POSTLINE" --update-match "foo=h.*" --line "$UPDATE" "$FILE"
     assert_output - <<EOF
 sing/e=wha\\ever
 foo=bar

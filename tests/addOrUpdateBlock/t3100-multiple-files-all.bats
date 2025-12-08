@@ -114,7 +114,7 @@ EOF
 }
 
 @test "update all with existing block in two files updates at the end of the other two files only" {
-    run addOrUpdateBlock --all --in-place --marker subsequent --block-text "Single line" "$FILE" "$FILE2" "$FILE3" "$FILE4"
+    run -0 addOrUpdateBlock --all --in-place --marker subsequent --block-text "Single line" "$FILE" "$FILE2" "$FILE3" "$FILE4"
     diff -y - --label expected "$FILE" <<EOF
 $(cat "$FRESH")
 # BEGIN subsequent
