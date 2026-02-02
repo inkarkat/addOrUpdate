@@ -63,3 +63,29 @@ EOF
     run -99 addOrUpdateLine --line "$UPDATE" --add-before '/doesNotMatch/' "$FILE"
     assert_output - < "$FILE"
 }
+
+@test "update with nonexisting line inserts on the first match of multiple ADDRESSes only" {
+    UPDATE='foo=new'
+    run -0 addOrUpdateLine --line "$UPDATE" --add-before '/^#/' --add-before '/^foo=/' "$FILE"
+    assert_output - <<EOF
+sing/e=wha\\ever
+$UPDATE
+foo=bar
+foo=hoo bar baz
+# SECTION
+foo=hi
+EOF
+}
+
+@test "update with nonexisting line inserts on the first match of multiple ADDRESSes that target the same line only" {
+    UPDATE='foo=new'
+    run -0 addOrUpdateLine --line "$UPDATE" --add-before '/^#/' --add-before '/SECTION/' "$FILE"
+    assert_output - <<EOF
+sing/e=wha\\ever
+foo=bar
+foo=hoo bar baz
+$UPDATE
+# SECTION
+foo=hi
+EOF
+}

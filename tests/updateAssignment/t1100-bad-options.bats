@@ -32,12 +32,6 @@ load temp
     assert_line -n 1 -e '^Usage:'
 }
 
-@test "error when combining --add-before and --add-after" {
-    run -2 updateAssignment --add-before 4 --add-after 6 --lhs foo --rhs new "$FILE"
-    assert_line -n 0 'ERROR: Cannot combine --add-before and --add-after.'
-    assert_line -n 1 -e '^Usage:'
-}
-
 @test "error on --create-nonexisting" {
     run -2 updateAssignment --create-nonexisting --lhs foo --rhs new "$FILE"
     assert_line -n 0 'ERROR: Cannot use --create-nonexisting when appending is not allowed.'
