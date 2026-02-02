@@ -17,7 +17,7 @@ EOF
 
 @test "update with nonexisting line inserts on the first match of after and before ADDRESSes only" {
     UPDATE='foo=new'
-    run -0 addOrUpdateLine --line "$UPDATE" --add-after '/^#/' --add-before '/^foo=/' "$FILE"
+    run -0 addOrUpdateLine --line "$UPDATE" --add-before '/^foo=/' --add-after '/^#/' "$FILE"
     assert_output - <<EOF
 sing/e=wha\\ever
 $UPDATE

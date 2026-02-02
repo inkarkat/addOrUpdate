@@ -145,8 +145,8 @@ do
 	--post-line)	    shift; escapedLine="${1//\\/\\\\}"; freshPostLines+="${freshPostLines+\\$NL}${escapedLine//${NL}/\\$NL}"; shift;;
 	--pre-update)	    shift; updatePreLines+="${updatePreLines:+\\n}$(literalReplacement "$1")"; shift;;
 	--post-update)	    shift; updatePostLines+="${updatePostLines:+\\n}$(literalReplacement "$1")"; shift;;
-	--add-before)	    shift; addAddresses+=("${1:?}"); addAddressInsertCommand["$1"]='i'; shift;;
-	--add-after)	    shift; addAddresses+=("${1:?}"); addAddressInsertCommand["$1"]='a'; shift;;
+	--add-before)	    shift; addAddresses+=("${1:?}"); addAddressInsertCommand["$1"]='insert'; shift;;
+	--add-after)	    shift; addAddresses+=("${1:?}"); addAddressInsertCommand["$1"]='append'; shift;;
 	--no-skip)	    shift; noSkipAddresses+=("${1:?}"); shift;;
 	--skip)		    shift; skipAddresses+=("${1:?}"); shift;;
 	--)		    shift; break;;
@@ -198,7 +198,7 @@ fi
 [ "$updateMatch" ] || updateMatch="$literalLinePattern"
 if [ ${#addAddresses[@]} -eq 0 ]; then
     addAddresses+=('$')
-    addAddressInsertCommand['$']='a'
+    addAddressInsertCommand['$']='append'
 fi
 
 [ $# -eq 0 ] && set -- -    # Read from stdin if no FILE is passed.
@@ -238,18 +238,23 @@ sedProgramInsertTextAtAddAddresses()
 {
     local insertText="${1?}"; shift
     let insertCnt+=1
+    typeset -A insertCommands=()
     local addAddress; for addAddress in "${addAddresses[@]}"
     do
 	local insertCommand="${addAddressInsertCommand["$addAddress"]}"
-	sedProgram+=(-e "${addAddress}b insert${insertCnt}")
+	insertCommands["$insertCommand"]=t
+	sedProgram+=(-e "${addAddress}b ${insertCommand}${insertCnt}")
     done
     # Use a meta-programmed insertion subroutine instead of duplicating the insert
     # commands for each add address.
-    sedSubroutines+=(
-	-e ":insert${insertCnt}"
-	-e "${insertCommand:?}\\${NL}${insertText}"
-	-e "b insertReturn${insertCnt}"
-    )
+    local insertCommand; for insertCommand in "${!insertCommands[@]}"
+    do
+	sedSubroutines+=(
+	    -e ":${insertCommand}${insertCnt}"
+	    -e "${insertCommand:0:1}\\${NL}${insertText}"
+	    -e "b insertReturn${insertCnt}"
+	)
+    done
     sedProgram+=(
 	-e "${addAddress}b insert${insertCnt}"
 	-e ":insertReturn${insertCnt}"
