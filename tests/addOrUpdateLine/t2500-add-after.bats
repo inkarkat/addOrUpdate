@@ -52,7 +52,14 @@ foo=hoo bar baz
 foo=hi
 EOF
 }
+
 @test "update with existing line before the passed line keeps contents and returns 99" {
     run -99 addOrUpdateLine --line "foo=bar" --add-after 3 "$FILE"
     assert_output - < "$INPUT"
+}
+
+@test "update with nonexisting line does not modify the buffer if after-ADDRESS does not match" {
+    UPDATE='foo=new'
+    run -99 addOrUpdateLine --line "$UPDATE" --add-after '/doesNotMatch/' "$FILE"
+    assert_output - < "$FILE"
 }

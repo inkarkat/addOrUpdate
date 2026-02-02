@@ -57,3 +57,9 @@ foo=hoo bar baz
 foo=hi
 EOF
 }
+
+@test "update with nonexisting line does not modify the buffer if before-ADDRESS does not match" {
+    UPDATE='foo=new'
+    run -99 addOrUpdateLine --line "$UPDATE" --add-before '/doesNotMatch/' "$FILE"
+    assert_output - < "$FILE"
+}

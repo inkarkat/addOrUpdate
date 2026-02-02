@@ -62,7 +62,8 @@ HELPDESCRIPTION
     --add-after ADDRESS	    Do the update after ADDRESS instead of at the end of
 			    the FILE. Any existing lines that follow that line
 			    won't be considered!
-    --skip ADDRESS	    Ignore any lines at ADDRESS (can also be a range).
+    --skip ADDRESS	    Ignore any lines at ADDRESS (can also be a range),
+			    for both updates and additions.
     --line|-l LINE	    Search for (literal, full) LINE and add LINE if that
 			    doesn't exist yet.
     --accept-match|-a ACCEPT-PATTERN
@@ -141,7 +142,7 @@ do
 	--post-update)	    shift; updatePostLines+="${updatePostLines:+\\n}$(literalReplacement "$1")"; shift;;
 	--add-before)	    shift; addBeforeAddress="$1"; shift;;
 	--add-after)	    shift; addAfterAddress="$1"; shift;;
-	--skip)		    shift; sedSkipAddressesArgs+=(-e "${1:?}b last"); shift;;
+	--skip)		    shift; sedSkipAddressesArgs+=(-e "${1:?}b lastLineCheck"); shift;;
 	--)		    shift; break;;
 	-)		    break;;
 	-*)		    { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
@@ -228,14 +229,14 @@ process()
 	    # If ACCEPT-PATTERN matches, put a newline (as that can never be
 	    # matched as PATTERN, and is easier to write than LINE) into the
 	    # hold space to signal that there's already a match.
-	    -e "/${acceptMatch//\//\\/}/{ x; s/.*/\\n/; x; b last; }"
+	    -e "/${acceptMatch//\//\\/}/{ x; s/.*/\\n/; x; b lastConsidered; }"
 	)
     fi
 
     sedProgram+=(
 	# If there already has been a match (determined via the hold space, see
 	# next), don't update following lines.
-	-e "/${updateMatch//\//\\/}/{ x; /./{ x; b last; }; x; }"
+	-e "/${updateMatch//\//\\/}/{ x; /./{ x; b lastConsidered; }; x; }"
 
 	# If we find the pattern, duplicate its line into the hold space; this
 	# serves as a marker that we have done an update and also that we don't
@@ -251,7 +252,7 @@ process()
 	    # When the REPLACEMENT is identical to the original line, skip the
 	    # pre-/post-line updates and indicate no change by putting a newline
 	    # into the hold space, just like ACCEPT-PATTERN.
-	    -e 'G; /^\(.*\)\n\1$/{ s/\n[^\n]*$//; x; s/.*/\n/; x; b last; }; s/\n[^\n]*$//;'
+	    -e 'G; /^\(.*\)\n\1$/{ s/\n[^\n]*$//; x; s/.*/\n/; x; b lastConsidered; }; s/\n[^\n]*$//;'
 	)
 	if [ -n "${updatePreLines+t}" ]; then
 	    sedProgram+=(
@@ -278,11 +279,11 @@ process()
     fi
 
     sedProgram+=(
-	-e ':last'
-	# On the last line, we check the hold space. If it's identical to the
-	# changed line, no processing actually has happened, and we indicate the
-	# noop. If the hold space isn't empty, skip further processing (i.e.
-	# appending), as we've already done the update.
+	-e ':lastConsidered'
+	# On the last considered line, we check the hold space. If it's identical to the
+	# changed line, no processing actually has happened, and we indicate the noop.
+	# If the hold space isn't empty, skip further processing (i.e. appending), as
+	# we've already done the update.
 	-e "${addBeforeAddress:-${addAfterAddress:-\$}}{ x; /^\\n\\n$/{ x; b slurpToEnd }; /^\\n\$\\|${literalLinePattern//\//\\/}/{ x; b slurpToEndAndNoop }; /./{ x; b; }; x; }"
     )
 
@@ -317,6 +318,11 @@ process()
     fi
 
     sedProgram+=(
+	# Re-check at the last physical line, as the last considered line (via
+	# $addBeforeAddress / $addAfterAddress) may have been skipped.
+	-e :lastLineCheck
+	-e "\${ x; /^\\n\\n$/{ x; b; }; /^\\n\$\\|${literalLinePattern//\//\\/}/{ x; b noopExit; }; /./{ x; b; }; x; b noopExit; }"
+
 	-e 'b'
 
 	-e ':slurpToEnd'
@@ -325,10 +331,12 @@ process()
 
 	-e ':slurpToEndAndError'
 	-e '$!{ N; b slurpToEndAndError }'
+	-e ':errorExit'
 	-e '$q 98'
 
 	-e ':slurpToEndAndNoop'
 	-e '$!{ N; b slurpToEndAndNoop }'
+	-e ':noopExit'
 	-e '$q 99'
     )
 ${DEBUG:+dump-args --on-debug addOrUpdateBlock -v -- "${sedProgram[@]}"}

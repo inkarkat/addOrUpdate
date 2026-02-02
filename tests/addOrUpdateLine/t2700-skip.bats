@@ -57,15 +57,3 @@ foo=new
 foo=hi
 EOF
 }
-
-@test "update with pattern skips the last line and appends after it" {
-    run -0 addOrUpdateLine --line "foo=new" --skip \$ "$FILE"
-    assert_output - <<'EOF'
-sing/e=wha\ever
-foo=bar
-foo=hoo bar baz
-# SECTION
-foo=hi
-foo=new
-EOF
-}
