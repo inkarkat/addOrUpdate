@@ -20,7 +20,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before|--add-after ADDRESS] [--skip ADDRESS [--skip ...]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before|--add-after ADDRESS] [--skip ADDRESS [--skip ...] [--no-skip ADDRESS [--no-skip ...]]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -64,6 +64,10 @@ HELPDESCRIPTION
 			    won't be considered!
     --skip ADDRESS	    Ignore any lines at ADDRESS (can also be a range),
 			    for both updates and additions.
+    --no-skip ADDRESS	    Don't ignore any lines at ADDRESS (can also be a
+			    range) that would otherwise be skipped. Can be used
+			    to exempt some matching lines, or the first / last
+			    line that defines the skip range.
     --line|-l LINE	    Search for (literal, full) LINE and add LINE if that
 			    doesn't exist yet.
     --accept-match|-a ACCEPT-PATTERN
@@ -119,7 +123,8 @@ unset updatePreLines
 unset updatePostLines
 addBeforeAddress=
 addAfterAddress=
-typeset -a sedSkipAddressesArgs=()
+typeset -a noSkipAddresses=()
+typeset -a skipAddresses=()
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -142,7 +147,8 @@ do
 	--post-update)	    shift; updatePostLines+="${updatePostLines:+\\n}$(literalReplacement "$1")"; shift;;
 	--add-before)	    shift; addBeforeAddress="$1"; shift;;
 	--add-after)	    shift; addAfterAddress="$1"; shift;;
-	--skip)		    shift; sedSkipAddressesArgs+=(-e "${1:?}b lastLineCheck"); shift;;
+	--no-skip)	    shift; noSkipAddresses+=("${1:?}"); shift;;
+	--skip)		    shift; skipAddresses+=("${1:?}"); shift;;
 	--)		    shift; break;;
 	-)		    break;;
 	-*)		    { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
@@ -222,7 +228,20 @@ process()
     local isAppend="$1"; shift; [ "$ADDORUPDATELINE_NO_APPEND" ] && isAppend=
     local filespec="$1"; shift
 
-    typeset -a sedProgram=("${sedSkipAddressesArgs[@]}")
+    typeset -a sedProgram=()
+
+    local noSkipCommand noSkipAddress; for noSkipAddress in "${noSkipAddresses[@]}"
+    do
+	noSkipCommand+="${noSkipAddress}b noSkip; "
+    done
+    local skipAddress; for skipAddress in "${skipAddresses[@]}"
+    do
+	# Note: Skip exceptions must be evaluated inside the skip address range, so that
+	# the skip range itself still applies. If the no-skip addresses would simply
+	# jump over the skip addresses, their entire ranges would become ineffective.
+	sedProgram+=(-e "${skipAddress}{ ${noSkipCommand}b lastLineCheck; }")
+    done
+    [ -z "$noSkipCommand" ] || sedProgram+=(-e ':noSkip')
 
     if [ -n "$acceptMatch" ]; then
 	sedProgram+=(
