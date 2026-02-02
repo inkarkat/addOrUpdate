@@ -387,7 +387,7 @@ process()
 	-e 'b'
     )
     sedProgram+=("${sedSubroutines[@]}")
-${DEBUG:+dump-args --on-debug addOrUpdateBlock -v -- "${sedProgram[@]}"}
+${DEBUG:+dump-args --on-debug addOrUpdateLine -v -- "${sedProgram[@]}"}
     sed "${sedInplaceArgs[@]}" \
 	"${sedProgram[@]}" \
 	-- "$filespec"
