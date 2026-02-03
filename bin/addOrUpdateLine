@@ -20,7 +20,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS [--add-before ...]] [--add-after ADDRESS [--add-after ...]] [--skip ADDRESS [--skip ...] [--no-skip ADDRESS[;ADDRESS[;...]] [--no-skip ...]]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS [--add-before ...]] [--add-after ADDRESS [--add-after ...]] [--skip ADDRESS[;ADDRESS[;...]] [--skip ...] [--no-skip ADDRESS[;ADDRESS[;...]] [--no-skip ...]]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -62,8 +62,10 @@ HELPDESCRIPTION
     --add-after ADDRESS	    Do the update after ADDRESS instead of at the end of
 			    the FILE. First ADDRESS wins. Any existing lines
 			    that follow that line won't be considered!
-    --skip ADDRESS	    Ignore any lines at ADDRESS (can also be a range),
-			    for both updates and additions.
+    --skip ADDRESS[;ADDRESS[;...]]
+			    Ignore any lines at ADDRESS(es) (can also be a
+			    range; all ;-separated ADDRESSes must cover the
+			    current line), for both updates and additions.
     --no-skip ADDRESS[;ADDRESS[;...]]
 			    Don't ignore any lines at ADDRESS(es) (can also be a
 			    range; all ;-separated ADDRESSes must cover the
@@ -293,7 +295,7 @@ process()
 	# Note: Skip exceptions must be evaluated inside the skip address range, so that
 	# the skip range itself still applies. If the no-skip addresses would simply
 	# jump over the skip addresses, their entire ranges would become ineffective.
-	sedProgram+=(-e "${skipAddress}{ ${noSkipCommand}b lastLineCheck; }")
+	sedProgram+=(-e "$(expandAddressesConjunction "{ ${noSkipCommand}b lastLineCheck; }; " "$skipAddress")")
     done
     [ -z "$noSkipCommand" ] || sedProgram+=(-e ':noSkip')
 
