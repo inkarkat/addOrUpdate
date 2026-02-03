@@ -69,8 +69,8 @@ foo=hi
 [last one]
 foo=old
 
-$PRELINE
 [new-section]
+$PRELINE
 add=new
 $POSTLINE
 EOF

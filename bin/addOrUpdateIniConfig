@@ -32,6 +32,8 @@ unset section
 unset key
 unset value
 typeset -a addOrUpdateLineArgs=()
+typeset -a addOrUpdatePreLineArgs=()
+typeset -a addOrUpdatePreAsPostLineArgs=()
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -39,6 +41,10 @@ do
 	--section|-s)	shift; section="${1?}"; shift;;
 	--key|-k)	shift; key="${1?}"; shift;;
 	--value|-v)	shift; value="${1?}"; shift;;
+	--pre-line)	addOrUpdatePreLineArgs+=("$1" "${2?}")
+			addOrUpdatePreAsPostLineArgs+=(--post-line "${2?}")
+			shift; shift
+			;;
 	--)		addOrUpdateLineArgs+=("$1"); shift; break;;
 	*)		addOrUpdateLineArgs+=("$1"); shift;;
     esac
@@ -68,11 +74,12 @@ output="$(addOrUpdateLine \
 	--add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
 	--add-after '$' \
 	--line "${key}=${value}" --update-match "^${literalKey}=.*" \
-	"${addOrUpdateLineArgs[@]}" "$@")"; status=$?
+	"${addOrUpdatePreLineArgs[@]}" "${addOrUpdateLineArgs[@]}" "$@")"; status=$?
 case $status in
     1)	exec addOrUpdateLine \
 		--pre-line '' \
 		--line "[${section}]" \
+		"${addOrUpdatePreAsPostLineArgs[@]}" \
 		--post-line "${key}=${value}" \
 		"${addOrUpdateLineArgs[@]}" "$@"
 	;;
