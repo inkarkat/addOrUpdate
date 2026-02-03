@@ -75,8 +75,9 @@ literalSection="$(printf %s "$section" | sed -e 's/[][\$*.^/]/\\&/g')"
 
 output="$(addOrUpdateLine \
 	--skip "0,/^\\[${literalSection}\\][[:space:]]*\$/" \
-	--add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
+	--no-skip "$;/^\\[${literalSection}\\][[:space:]]*\$/" \
 	--add-after '$' \
+	--add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
 	"${addOrUpdateAddBeforeAfterArgs[@]}" \
 	--line "${key}=${value}" --update-match "^${literalKey}=.*" \
 	"${addOrUpdatePreLineArgs[@]}" "${addOrUpdateLineArgs[@]}" "$@")"; status=$?

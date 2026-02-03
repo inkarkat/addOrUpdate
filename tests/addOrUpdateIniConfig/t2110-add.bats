@@ -64,3 +64,21 @@ foo=old
 add=new
 EOF
 }
+
+@test "update with nonexisting key in empty last section appends at the very end" {
+    run -0 addOrUpdateIniConfig --section 'final' --key 'add' --value 'new' <<'EOF'
+[global]
+foo=none
+bar=hey
+
+[final]
+EOF
+    assert_output - <<'EOF'
+[global]
+foo=none
+bar=hey
+
+[final]
+add=new
+EOF
+}
