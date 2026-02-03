@@ -20,7 +20,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS [--add-before ...]] [--add-after ADDRESS [--add-after ...]] [--skip ADDRESS [--skip ...] [--no-skip ADDRESS [--no-skip ...]]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS[;ADDRESS[;...]] [--add-before ...]] [--add-after ADDRESS[;ADDRESS[;...]] [--add-after ...]] [--skip ADDRESS[;ADDRESS[;...]] [--skip ...] [--no-skip ADDRESS[;ADDRESS[;...]] [--no-skip ...]]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -56,18 +56,28 @@ HELPDESCRIPTION
 			    FILE(s) does not exist yet.
     --create-nonexisting    Create the first (each with --all) passed FILE if it
 			    does not exist yet, (and insert the LINE there).
-    --add-before ADDRESS    Insert the update at ADDRESS instead of at the end
-			    of the FILE. First ADDRESS wins. Any existing lines
-			    that follow that line won't be considered!
-    --add-after ADDRESS	    Do the update after ADDRESS instead of at the end of
-			    the FILE. First ADDRESS wins. Any existing lines
-			    that follow that line won't be considered!
-    --skip ADDRESS	    Ignore any lines at ADDRESS (can also be a range),
-			    for both updates and additions.
-    --no-skip ADDRESS	    Don't ignore any lines at ADDRESS (can also be a
-			    range) that would otherwise be skipped. Can be used
-			    to exempt some matching lines, or the first / last
-			    line that defines the skip range.
+    --add-before ADDRESS[;ADDRESS[;...]]
+			    Insert the update before ADDRESS(es) (all
+			    ;-separated ADDRESSes must cover the current line)
+			    instead of at the end of the FILE. First ADDRESS
+			    wins. Any existing lines that follow that line won't
+			    be considered!
+    --add-after ADDRESS[;ADDRESS[;...]]
+			    Append the update after ADDRESS(es) (all ;-separated
+			    ADDRESSes must cover the current line) instead of at
+			    the end of the FILE. First ADDRESS wins. Any
+			    existing lines that follow that line won't be
+			    considered!
+    --skip ADDRESS[;ADDRESS[;...]]
+			    Ignore any lines at ADDRESS(es) (can also be a
+			    range; all ;-separated ADDRESSes must cover the
+			    current line), for both updates and additions.
+    --no-skip ADDRESS[;ADDRESS[;...]]
+			    Don't ignore any lines at ADDRESS(es) (can also be a
+			    range; all ;-separated ADDRESSes must cover the
+			    current line) that would otherwise be skipped. Can
+			    be used to exempt some matching lines, or the first
+			    / last line that defines the skip range.
     --line|-l LINE	    Search for (literal, full) LINE and add LINE if that
 			    doesn't exist yet.
     --accept-match|-a ACCEPT-PATTERN
@@ -231,7 +241,7 @@ sedProgramAddCommandAtAddAddresses()
     local sedCommand="${1:?}"; shift
     local addAddress; for addAddress in "${addAddresses[@]}"
     do
-	sedProgram+=(-e "${addAddress}${sedCommand}")
+	sedProgram+=(-e "$(expandAddressesConjunction "$sedCommand" "$addAddress")")
     done
 }
 
@@ -245,7 +255,7 @@ sedProgramInsertTextAtAddAddresses()
     do
 	local insertCommand="${addAddressInsertCommand["$addAddress"]}"
 	insertCommands["$insertCommand"]=t
-	sedProgram+=(-e "${addAddress}b ${insertCommand}${insertCnt}")
+	sedProgram+=(-e "$(expandAddressesConjunction "b ${insertCommand}${insertCnt}" "$addAddress")")
     done
     # Use a meta-programmed insertion subroutine instead of duplicating the insert
     # commands for each add address.
@@ -262,6 +272,21 @@ sedProgramInsertTextAtAddAddresses()
     )
 }
 
+expandAddressesConjunction()
+{
+    local innerCommand="${1:?}"; shift
+    local resultingCommand address; for address
+    do
+	while [[ "$address" =~ ^(.+)\;([^\;]+)$ ]]
+	do
+	    address="${BASH_REMATCH[1]}"
+	    innerCommand="{ ${BASH_REMATCH[2]}${innerCommand}}; "
+	done
+	resultingCommand+="${address}${innerCommand}"
+    done
+    printf %s "$resultingCommand"
+}
+
 process()
 {
     local isAppend="$1"; shift; [ "$ADDORUPDATELINE_NO_APPEND" ] && isAppend=
@@ -270,16 +295,13 @@ process()
     typeset -a sedProgram=()
     typeset -a sedSubroutines=()
 
-    local noSkipCommand noSkipAddress; for noSkipAddress in "${noSkipAddresses[@]}"
-    do
-	noSkipCommand+="${noSkipAddress}b noSkip; "
-    done
+    local noSkipCommand="$(expandAddressesConjunction 'b noSkip; ' "${noSkipAddresses[@]}")"
     local skipAddress; for skipAddress in "${skipAddresses[@]}"
     do
 	# Note: Skip exceptions must be evaluated inside the skip address range, so that
 	# the skip range itself still applies. If the no-skip addresses would simply
 	# jump over the skip addresses, their entire ranges would become ineffective.
-	sedProgram+=(-e "${skipAddress}{ ${noSkipCommand}b lastLineCheck; }")
+	sedProgram+=(-e "$(expandAddressesConjunction "{ ${noSkipCommand}b lastLineCheck; }; " "$skipAddress")")
     done
     [ -z "$noSkipCommand" ] || sedProgram+=(-e ':noSkip')
 
