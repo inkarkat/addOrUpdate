@@ -20,7 +20,7 @@ printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
     # skim the long one.
-    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS [--add-before ...]] [--add-after ADDRESS [--add-after ...]] [--skip ADDRESS [--skip ...] [--no-skip ADDRESS [--no-skip ...]]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
+    printf 'Usage: %q %s\n' "$(basename "$1")" '[-i[SUFFIX]|--in-place[=SUFFIX]|-t|--test-only] [--all] [--ignore-nonexisting|--create-nonexisting] [--add-before ADDRESS [--add-before ...]] [--add-after ADDRESS [--add-after ...]] [--skip ADDRESS [--skip ...] [--no-skip ADDRESS[;ADDRESS[;...]] [--no-skip ...]]] -l|--line LINE [-a|--accept-match ACCEPT-PATTERN] [-u|--update-match PATTERN] [-r|--replacement REPLACEMENT] [--pre-line PRETEXT [--pre-line ...]] [--post-line POSTTEXT [--post-line ...]] [--pre-update PRETEXT [--pre-update ...]] [--post-update POSTTEXT [--post-update ...]] [--] [FILE ...] [-?|-h|--help]'
 }
 printUsage()
 {
@@ -64,10 +64,12 @@ HELPDESCRIPTION
 			    that follow that line won't be considered!
     --skip ADDRESS	    Ignore any lines at ADDRESS (can also be a range),
 			    for both updates and additions.
-    --no-skip ADDRESS	    Don't ignore any lines at ADDRESS (can also be a
-			    range) that would otherwise be skipped. Can be used
-			    to exempt some matching lines, or the first / last
-			    line that defines the skip range.
+    --no-skip ADDRESS[;ADDRESS[;...]]
+			    Don't ignore any lines at ADDRESS(es) (can also be a
+			    range; all ;-separated ADDRESSes must cover the
+			    current line) that would otherwise be skipped. Can
+			    be used to exempt some matching lines, or the first
+			    / last line that defines the skip range.
     --line|-l LINE	    Search for (literal, full) LINE and add LINE if that
 			    doesn't exist yet.
     --accept-match|-a ACCEPT-PATTERN
@@ -270,9 +272,14 @@ process()
     typeset -a sedProgram=()
     typeset -a sedSubroutines=()
 
-    local noSkipCommand noSkipAddress; for noSkipAddress in "${noSkipAddresses[@]}"
+    local noSkipCommand noSkipAddress noSkipBranchCommand='b noSkip; '; for noSkipAddress in "${noSkipAddresses[@]}"
     do
-	noSkipCommand+="${noSkipAddress}b noSkip; "
+	while [[ "$noSkipAddress" =~ ^(.+)\;([^\;]+)$ ]]
+	do
+	    noSkipAddress="${BASH_REMATCH[1]}"
+	    noSkipBranchCommand="{ ${BASH_REMATCH[2]}${noSkipBranchCommand}}; "
+	done
+	noSkipCommand+="${noSkipAddress}${noSkipBranchCommand}"
     done
     local skipAddress; for skipAddress in "${skipAddresses[@]}"
     do
