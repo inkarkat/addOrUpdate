@@ -63,9 +63,19 @@ fi >&2
 literalKey="$(printf %s "$key" | sed -e 's/[][\$*.^]/\\&/g')"
 literalSection="$(printf %s "$section" | sed -e 's/[][\$*.^/]/\\&/g')"
 
-exec addOrUpdateLine \
-    --skip "1,/^\\[${literalSection}\\][[:space:]]*\$/" \
-    --add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
-    --add-after '$' \
-    --line "${key}=${value}" --update-match "^${literalKey}=.*" \
-    "${addOrUpdateLineArgs[@]}" "$@"
+output="$(addOrUpdateLine \
+	--skip "1,/^\\[${literalSection}\\][[:space:]]*\$/" \
+	--add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
+	--add-after '$' \
+	--line "${key}=${value}" --update-match "^${literalKey}=.*" \
+	"${addOrUpdateLineArgs[@]}" "$@")"; status=$?
+case $status in
+    1)	exec addOrUpdateLine \
+		--pre-line '' \
+		--line "[${section}]" \
+		--post-line "${key}=${value}" \
+		"${addOrUpdateLineArgs[@]}" "$@"
+	;;
+    *)	printf '%s\n' "$output"
+	exit $status;;
+esac
