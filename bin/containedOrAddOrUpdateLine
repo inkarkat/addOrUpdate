@@ -45,6 +45,8 @@ HELPDESCRIPTION
 			    existed and no modifications were made.
 EXIT STATUS:
     0	An update has happened (with --all: in at least one FILE).
+    1	No modifications were made because no add-before/after ADDRESS was
+	encountered.
     2	Bad invocation, wrong or missing command-line arguments.
     3	Internal error or failed assertion.
     4	None of the passed FILE(s) exist; no modifications could be made.

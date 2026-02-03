@@ -60,7 +60,7 @@ EOF
 
 @test "update with nonexisting line does not modify the buffer if after-ADDRESS does not match" {
     UPDATE='foo=new'
-    run -99 addOrUpdateLine --line "$UPDATE" --add-after '/doesNotMatch/' "$FILE"
+    run -1 addOrUpdateLine --line "$UPDATE" --add-after '/doesNotMatch/' "$FILE"
     assert_output - < "$FILE"
 }
 

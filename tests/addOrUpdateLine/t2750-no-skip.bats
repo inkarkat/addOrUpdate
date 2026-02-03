@@ -47,7 +47,7 @@ EOF
 }
 
 @test "skipping the final section prevents appending at the end" {
-    run -99 addOrUpdateLine --line "foo=new" --skip '/# SECTION/,$' --no-skip '/# SECTION/' "$FILE"
+    run -1 addOrUpdateLine --line "foo=new" --skip '/# SECTION/,$' --no-skip '/# SECTION/' "$FILE"
     assert_output - < "$FILE"
 }
 

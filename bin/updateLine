@@ -5,8 +5,7 @@ printUsage()
     addOrUpdateLine --help 2>&1 | sed \
 	-e '1s#^.*$#Updates the first line that matches PATTERN (once, in the first file to match, or in all with --all (but still just the first match in each)) in the passed FILE(s) with LINE / REPLACEMENT.#' \
 	-e '2b removeFirstParagraphLoop' \
-	-e '/0	An update has happened/a\
-    1	PATTERN does not match, no modifications were made.' \
+	-e '/1	No modifications were made/{ N; s/.*/    1	PATTERN does not match, no modifications were made./; }' \
 	-e 's/Instead of searching for the literal LINE, accept/Accept/' \
 	-e 's/instead of the literal LINE//' \
 	-e '/^ *\(--create-nonexisting\|--line\|--pre-line\|--post-line\)/b removeOptionLoop' \

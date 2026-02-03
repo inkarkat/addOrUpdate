@@ -47,6 +47,6 @@ EOF
 }
 
 @test "update with pattern skips the last line and does not append anything" {
-    run -99 updateLine --line "foo=new" --update-match "foo=h[ij]" --skip \$ "$FILE"
+    run -1 updateLine --line "foo=new" --update-match "foo=h[ij]" --skip \$ "$FILE"
     assert_output - < "$FILE"
 }

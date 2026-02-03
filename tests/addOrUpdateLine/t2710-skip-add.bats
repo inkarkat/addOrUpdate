@@ -3,12 +3,12 @@
 load temp
 
 @test "update with pattern skips the last line and does not append anything" {
-    run -99 addOrUpdateLine --line "foo=new" --skip \$ "$FILE"
+    run -1 addOrUpdateLine --line "foo=new" --skip \$ "$FILE"
     assert_output - < "$FILE"
 }
 
 @test "update with pattern does not append because the add-after pattern is inside the passed skip address range" {
-    run -99 addOrUpdateLine --line "new=added" --add-after '/#/' --skip 3,4 "$FILE"
+    run -1 addOrUpdateLine --line "new=added" --add-after '/#/' --skip 3,4 "$FILE"
     assert_output - < "$FILE"
 }
 
