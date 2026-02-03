@@ -264,6 +264,21 @@ sedProgramInsertTextAtAddAddresses()
     )
 }
 
+expandAddressesConjunction()
+{
+    local innerCommand="${1:?}"; shift
+    local resultingCommand address; for address
+    do
+	while [[ "$address" =~ ^(.+)\;([^\;]+)$ ]]
+	do
+	    address="${BASH_REMATCH[1]}"
+	    innerCommand="{ ${BASH_REMATCH[2]}${innerCommand}}; "
+	done
+	resultingCommand+="${address}${innerCommand}"
+    done
+    printf %s "$resultingCommand"
+}
+
 process()
 {
     local isAppend="$1"; shift; [ "$ADDORUPDATELINE_NO_APPEND" ] && isAppend=
@@ -272,15 +287,7 @@ process()
     typeset -a sedProgram=()
     typeset -a sedSubroutines=()
 
-    local noSkipCommand noSkipAddress noSkipBranchCommand='b noSkip; '; for noSkipAddress in "${noSkipAddresses[@]}"
-    do
-	while [[ "$noSkipAddress" =~ ^(.+)\;([^\;]+)$ ]]
-	do
-	    noSkipAddress="${BASH_REMATCH[1]}"
-	    noSkipBranchCommand="{ ${BASH_REMATCH[2]}${noSkipBranchCommand}}; "
-	done
-	noSkipCommand+="${noSkipAddress}${noSkipBranchCommand}"
-    done
+    local noSkipCommand="$(expandAddressesConjunction 'b noSkip; ' "${noSkipAddresses[@]}")"
     local skipAddress; for skipAddress in "${skipAddresses[@]}"
     do
 	# Note: Skip exceptions must be evaluated inside the skip address range, so that
