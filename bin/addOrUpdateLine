@@ -256,7 +256,6 @@ sedProgramInsertTextAtAddAddresses()
 	)
     done
     sedProgram+=(
-	-e "${addAddress}b insert${insertCnt}"
 	-e ":insertReturn${insertCnt}"
     )
 }
