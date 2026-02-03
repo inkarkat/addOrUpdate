@@ -64,7 +64,7 @@ literalKey="$(printf %s "$key" | sed -e 's/[][\$*.^]/\\&/g')"
 literalSection="$(printf %s "$section" | sed -e 's/[][\$*.^/]/\\&/g')"
 
 output="$(addOrUpdateLine \
-	--skip "1,/^\\[${literalSection}\\][[:space:]]*\$/" \
+	--skip "0,/^\\[${literalSection}\\][[:space:]]*\$/" \
 	--add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
 	--add-after '$' \
 	--line "${key}=${value}" --update-match "^${literalKey}=.*" \
