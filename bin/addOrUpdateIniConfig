@@ -1,0 +1,166 @@
+#!/bin/bash
+shopt -qs extglob
+
+typeset -a usageOverrideArgs=(
+    -e '/^ *\(--line|-l\|--update-match|-u\|--replacement|-r\|--skip\|--no-skip\)/b removeOptionLoop'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateLine /\1\2'"$(basename "$0")"' -s|--section SECTION -k|--key KEY -v|--value VALUE /; s/-l|--line config line \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] //; s/\[--skip ADDRESS \[--skip ...\] \[--no-skip ADDRESS \[--no-skip ...\]\]\]//; s/\[FILE \.\.\.\]/[INI-FILE ...]/ }'
+)
+printUsage()
+{
+    addOrUpdateLine --doesNotExist 2>&1 | sed \
+	-e '/^ERROR: Unknown option "--doesNotExist"!/{ N; s/\n$//; D; }' \
+	"${usageOverrideArgs[@]}" \
+	-e "/Try addOrUpdateLine --help for more information./s/addOrUpdateLine/$(basename "$1")/" \
+	-e :removeOptionLoop
+}
+printLongUsage()
+{
+    addOrUpdateLine --help 2>&1 | sed \
+	-e '1s#^.*$#'"Tries to locate a configuration in the form KEY=... under section [SECTION] in\nat least one (all with --all) of the passed INI-FILE(s), and updates it so that\nVALUE gets assigned (in the first file to match, and only the first such\nmatching config line there), or appends (at the SECTION's end of the last\nINI-FILE) if such config line does not exist yet.#" \
+	-e '2b removeFirstParagraphLoop' \
+	-e 's/LINE/config line/g' \
+	-e '/^ *--in-place/i\
+    --section|-s SECTION    Locate configuration under section [SECTION].\
+    --key|-k KEY	    Locate the first line that has KEY=...\
+    --value|-v VALUE	    Replace the original value after the = with VALUE.' \
+	"${usageOverrideArgs[@]}" \
+	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateLine .*/\1\2'"$(basename "$1") -s Settings -k gtk-application-prefer-dark-theme -v 0 ~\/.config\/gtk-3.0\/settings.ini/ }" \
+	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
+	-e b -e :removeOptionLoop -e '{ /\n *\(--line|-l\|--update-match|-u\|--replacement|-r\|--skip\|--no-skip\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
+}
+
+typeset -a allArgs=("$@")
+unset section
+unset key
+unset value
+typeset -a addOrUpdateLineArgs=()
+typeset -a addOrUpdatePreLineArgs=()
+typeset -a addOrUpdatePreAsPostLineArgs=()
+typeset -a addOrUpdateAddBeforeAfterArgs=()
+isAll=
+isCreateNonexisting=
+while [ $# -ne 0 ]
+do
+    case "$1" in
+	--help|-h|-\?)	shift; printLongUsage "$0"; exit 0;;
+	--section|-s)	shift; section="${1?}"; shift;;
+	--key|-k)	shift; key="${1?}"; shift;;
+	--value|-v)	shift; value="${1?}"; shift;;
+	--pre-line)	addOrUpdatePreLineArgs+=("$1" "${2?}")
+			addOrUpdatePreAsPostLineArgs+=(--post-line "${2?}")
+			shift; shift
+			;;
+	--add-@(before|after))
+			addOrUpdateAddBeforeAfterArgs+=("$1" "${2:?}"); shift; shift;;
+
+	--in-place|--in-place=*|-i*|--test-only|-t|--ignore-nonexisting)
+			addOrUpdateLineArgs+=("$1"); shift;;
+	--all)
+			addOrUpdateLineArgs+=("$1"); shift; isAll=t;;
+	--create-nonexisting)
+			addOrUpdateLineArgs+=("$1"); shift; isCreateNonexisting=t;;
+	--accept-match|-a|--post-line|--pre-update|--post-update)
+			addOrUpdateLineArgs+=("$1" "${2?}"); shift; shift;;
+
+	--)		addOrUpdateLineArgs+=("$1"); shift; break;;
+	*)		break;;
+    esac
+done
+if [ -z "${section+t}" -o -z "${key+t}" -o -z "${value+t}" ]; then
+    echo 'ERROR: All of -s|--section SECTION, -k|--key KEY and -v|--value VALUE must be passed.'
+    echo
+    printUsage "$0"
+    exit 2
+elif [ -z "$section" ]; then
+    echo 'ERROR: SECTION cannot be empty.'
+    echo
+    printUsage "$0"
+    exit 2
+elif [ -z "$key" ]; then
+    echo 'ERROR: KEY cannot be empty.'
+    echo
+    printUsage "$0"
+    exit 2
+fi >&2
+
+literalKey="$(printf %s "$key" | sed -e 's/[][\$*.^]/\\&/g')"
+literalSection="$(printf %s "$section" | sed -e 's/[][\$*.^/]/\\&/g')"
+
+addOrUpdateKeyValueInSection()
+{
+    addOrUpdateLine \
+	    --skip "0,/^\\[${literalSection}\\][[:space:]]*\$/" \
+	    --no-skip "$;/^\\[${literalSection}\\][[:space:]]*\$/" \
+	    --add-after '$' \
+	    --add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
+	    "${addOrUpdateAddBeforeAfterArgs[@]}" \
+	    --line "${key}=${value}" --update-match "^${literalKey}=.*" \
+	    "${addOrUpdatePreLineArgs[@]}" "${addOrUpdateLineArgs[@]}" "$@"
+}
+addSectionKeyAndValue()
+{
+    addOrUpdateLine \
+	    --pre-line '' \
+	    --line "[${section}]" \
+	    "${addOrUpdatePreAsPostLineArgs[@]}" \
+	    --post-line "${key}=${value}" \
+	    "${addOrUpdateLineArgs[@]}" "$@"
+}
+
+stdinIndex=
+typeset -a nonexistingFilespecs=()
+for ((i = 1; i <= $#; i++))
+do
+    filespec="${!i}"
+    if [ "$filespec" = - ]; then
+	stdinIndex=$((i - 1))
+    elif [ "$isCreateNonexisting" ] && [ ! -e "$filespec" ]; then
+	nonexistingFilespecs+=("$filespec")
+	set -- "${@:1:$((i - 1))}" "${@:$((i + 1))}"
+	let i-=1
+    fi
+done
+if [ ${#nonexistingFilespecs[@]} -gt 0 ]; then
+    # Process non-existing FILE(s) separately and in a single pass, so that it gets
+    # both SECTION and KEY=VALUE. The default two-phase execution would just add the
+    # SECTION, as on the second phase, the file would not be non-existent any
+    # longer.
+    addSectionKeyAndValue "${nonexistingFilespecs[@]}"; status=$?
+
+    # With --all, any passed existing FILE needs to be processed as well.
+    [ "$isAll" -a $status -eq 0 -a $# -gt 0 ] || exit $status
+fi
+
+
+if [ $# -eq 0 ]; then
+    exec tempfile --quiet --basename addOrUpdateIniConfig --sink-exec "${BASH_SOURCE[0]}" "${allArgs[@]}" \;
+elif [ $# -eq 1 -a "$1" = - ] || [ -n "$stdinIndex" ]; then
+    typeset -a files=("$@")
+    exec tempfile --quiet --basename addOrUpdateIniConfig --sink-exec "${BASH_SOURCE[0]}" \
+	    "${allArgs[@]:0:$((${#allArgs[@]} - $#))}" "${files[@]:0:stdinIndex}" {} "${files[@]:$((stdinIndex + 1))}" \;
+elif [ $# -eq 1 ]; then
+    # For a single FILE, assume that the SECTION is already there, and directly try
+    # to add or update the KEY=VALUE inside that SECTION. If that fails, we'll add
+    # both SECTION and its first KEY=VALUE in a second invocation.
+    output="$(addOrUpdateKeyValueInSection "$@")"; status=$?
+    case $status in
+	1)  addSectionKeyAndValue "$@";;
+	*)  printf '%s\n' "$output"
+	    exit $status;;
+    esac
+else
+    # When multiple FILEs are passed, we cannot use the first optimistic
+    # invocation's exit status in order to check whether the SECTION did in fact
+    # exist; depending on the --all flag, processing is different.
+    # Instead, always do the conservative two-step process of first ensuring that
+    # the SECTION is there, and then adding / updating the KEY=VALUE in there.
+    addOrUpdateLine \
+	    --pre-line '' \
+	    --line "[${section}]" \
+	    "${addOrUpdateLineArgs[@]}" "$@" \
+	    >/dev/null; status=$?
+    case $status in
+	2|3|4|5)    exit $status;;  # Don't try again for fatal errors.
+    esac
+    addOrUpdateKeyValueInSection "$@"
+fi
