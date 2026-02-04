@@ -29,6 +29,7 @@ printLongUsage()
 	-e b -e :removeOptionLoop -e '{ /\n *\(--line|-l\|--update-match|-u\|--replacement|-r\|--skip\|--no-skip\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
 }
 
+typeset -a allArgs=("$@")
 unset section
 unset key
 unset value
@@ -91,7 +92,13 @@ addOrUpdateKeyValueInSection()
 	    "${addOrUpdatePreLineArgs[@]}" "${addOrUpdateLineArgs[@]}" "$@"
 }
 
-if [ $# -le 1 ]; then
+if [ $# -eq 0 ]; then
+    exec tempfile --quiet --basename addOrUpdateIniConfig --sink-exec "${BASH_SOURCE[0]}" "${allArgs[@]}" \;
+elif [ $# -eq 1 -a "$1" = - ] && index=0 || index=$(index - "$@"); then
+    typeset -a files=("$@")
+    exec tempfile --quiet --basename addOrUpdateIniConfig --sink-exec "${BASH_SOURCE[0]}" \
+	    "${allArgs[@]:0:$((${#allArgs[@]} - $#))}" "${files[@]:0:index}" {} "${files[@]:$((index + 1))}" \;
+elif [ $# -le 1 ]; then
     # For a single FILE, assume that the SECTION is already there, and directly try
     # to add or update the KEY=VALUE inside that SECTION. If that fails, we'll add
     # both SECTION and its first KEY=VALUE in a second invocation.
