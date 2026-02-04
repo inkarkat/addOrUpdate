@@ -38,7 +38,7 @@ fox=hi
 EOF
 }
 
-@test "update with existing assignment after the passed line keeps contents and returns 99" {
+@test "update with existing assignment before the passed line keeps contents and returns 99" {
     run -99 addOrUpdateAssignment --lhs foo --rhs bar --add-after 3 "$FILE"
     assert_output - < "$INPUT"
 }

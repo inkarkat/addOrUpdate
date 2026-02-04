@@ -43,7 +43,7 @@ EOF
     assert_output - < "$INPUT"
 }
 
-@test "update with existing assignment one before the passed line keeps contents and returns 99" {
+@test "update with existing assignment one after the passed line adds the existing one again" {
     run -0 addOrUpdateAssignment --lhs foo --rhs bar --add-before 1 "$FILE"
     assert_output - <<'EOF'
 foo=bar
