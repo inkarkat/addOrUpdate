@@ -5,7 +5,7 @@ load temp
 @test "processing standard input works" {
     CONTENTS='# useless'
     UPDATE='foo=new'
-    output="$(echo "$CONTENTS" | addOrUpdateLine --line "$UPDATE")"
+    run -0 addOrUpdateLine --line "$UPDATE" <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 $UPDATE
@@ -15,7 +15,7 @@ EOF
 @test "nonexisting file and standard input works" {
     CONTENTS='# useless'
     UPDATE='foo=new'
-    output="$(echo "$CONTENTS" | addOrUpdateLine --line "$UPDATE" "$NONE" -)"
+    run -0 addOrUpdateLine --line "$UPDATE" "$NONE" - <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 $UPDATE

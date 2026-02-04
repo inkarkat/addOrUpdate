@@ -5,7 +5,7 @@ load temp
 @test "processing standard input works" {
     CONTENTS="# useless
 stuff"
-    output="$(echo "$CONTENTS" | addOrUpdateWithSed $SED_UPDATE)"
+    run -0 addOrUpdateWithSed $SED_UPDATE <<<"$CONTENTS"
     assert_output - <<'EOF'
 updated
 stuff
@@ -15,7 +15,7 @@ EOF
 @test "nonexisting file and standard input works" {
     CONTENTS="# useless
 stuff"
-    output="$(echo "$CONTENTS" | addOrUpdateWithSed $SED_UPDATE -- "$NONE" -)"
+    run -0 addOrUpdateWithSed $SED_UPDATE -- "$NONE" - <<<"$CONTENTS"
     assert_output - <<'EOF'
 updated
 stuff

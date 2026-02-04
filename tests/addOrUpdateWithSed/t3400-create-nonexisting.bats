@@ -5,7 +5,7 @@ load temp
 @test "processing standard input with creation of nonexisting works" {
     CONTENTS='# useless
 stuff'
-    output="$(echo "$CONTENTS" | addOrUpdateWithSed --create-nonexisting $SED_UPDATE)"
+    run -0 addOrUpdateWithSed --create-nonexisting $SED_UPDATE <<<"$CONTENTS"
     assert_output - <<'EOF'
 updated
 stuff

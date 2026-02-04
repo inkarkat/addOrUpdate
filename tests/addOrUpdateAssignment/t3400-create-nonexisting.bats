@@ -4,7 +4,7 @@ load temp
 
 @test "processing standard input with creation of nonexisting works" {
     CONTENTS='# useless'
-    output="$(echo "$CONTENTS" | addOrUpdateAssignment --create-nonexisting --lhs foo --rhs new)"
+    run -0 addOrUpdateAssignment --create-nonexisting --lhs foo --rhs new <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 foo=new

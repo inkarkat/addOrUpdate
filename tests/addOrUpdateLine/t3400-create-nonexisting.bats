@@ -5,7 +5,7 @@ load temp
 @test "processing standard input with creation of nonexisting works" {
     CONTENTS='# useless'
     UPDATE='foo=new'
-    output="$(echo "$CONTENTS" | addOrUpdateLine --create-nonexisting --line "$UPDATE")"
+    run -0 addOrUpdateLine --create-nonexisting --line "$UPDATE" <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 $UPDATE

@@ -25,7 +25,7 @@ load temp
 @test "in-place update with nonexisting assignment returns 1" {
     run -1 appendAssignment --in-place --lhs add --rhs new "$FILE"
     assert_output ''
-    assert_equal "$(<"$FILE")" "$(cat "$INPUT")"
+    diff -y "$INPUT" --label expected "$FILE"
 }
 
 @test "in-place update with existing assignment keeps contents and returns 99" {

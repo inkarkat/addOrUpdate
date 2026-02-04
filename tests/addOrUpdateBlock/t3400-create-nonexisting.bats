@@ -3,7 +3,7 @@
 load temp
 
 @test "processing standard input with creation of nonexisting works" {
-    output="$(echo "$CONTENTS" | addOrUpdateBlock --create-nonexisting --marker test --block-text "$TEXT")"
+    run -0 addOrUpdateBlock --create-nonexisting --marker test --block-text "$TEXT" <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 $BLOCK
@@ -14,7 +14,7 @@ EOF
     run -0 addOrUpdateBlock --create-nonexisting --in-place --marker test --block-text "$TEXT" "$NONE" "$FILE" "$NONE2" "$FILE2"
     assert_output ''
     assert_exists "$NONE"
-    assert_equal "$(<"$NONE")" "$BLOCK"
+    diff -y - --label expected "$NONE" <<<"$BLOCK"
     diff -y "$FILE" "$FRESH"
     diff -y "$FILE2" "$EXISTING"
     assert_not_exists "$NONE2"
@@ -24,7 +24,7 @@ EOF
     run -0 addOrUpdateBlock --create-nonexisting --in-place --marker test --block-text "$TEXT" "$NONE" "$NONE2"
     assert_output ''
     assert_exists "$NONE"
-    assert_equal "$(<"$NONE")" "$BLOCK"
+    diff -y - --label expected "$NONE" <<<"$BLOCK"
     assert_not_exists "$NONE2"
 }
 
@@ -77,12 +77,12 @@ EOF
     assert_output ''
     assert_exists "$NONE"
     assert_exists "$NONE2"
-    assert_equal "$(<"$NONE")" "$BLOCK"
+    diff -y - --label expected "$NONE" <<<"$BLOCK"
     diff -y - --label expected "$FILE" <<EOF
 $(cat "$FRESH")
 $BLOCK
 EOF
-    assert_equal "$(<"$NONE2")" "$BLOCK"
+    diff -y - --label expected "$NONE2" <<<"$BLOCK"
     diff -y - --label expected "$FILE2" <<EOF
 first line
 second line
@@ -112,6 +112,6 @@ EOF
     assert_output ''
     assert_exists "$NONE"
     assert_exists "$NONE2"
-    assert_equal "$(<"$NONE")" "$BLOCK"
-    assert_equal "$(<"$NONE2")" "$BLOCK"
+    diff -y - --label expected "$NONE" <<<"$BLOCK"
+    diff -y - --label expected "$NONE2" <<<"$BLOCK"
 }

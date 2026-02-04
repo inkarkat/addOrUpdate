@@ -16,5 +16,5 @@ EOF
     export MEMOIZEDECISION_CHOICE=y
     run -0 containedOrAddOrUpdateBlock --in-place --marker test --block-text "$TEXT" "$FILE3"
     assert_output -p 'does not yet contain test. Shall I update it?'
-    assert_equal "$(<"$FILE3")" "$BLOCK"
+    diff -y - --label expected "$FILE3" <<<"$BLOCK"
 }

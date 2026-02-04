@@ -3,7 +3,7 @@
 load temp
 
 @test "processing standard input works" {
-    output="$(echo "$CONTENTS" | addOrUpdateBlock --marker test --block-text "$TEXT")"
+    run -0 addOrUpdateBlock --marker test --block-text "$TEXT" <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 $BLOCK
@@ -11,7 +11,7 @@ EOF
 }
 
 @test "nonexisting file and standard input works" {
-    output="$(echo "$CONTENTS" | addOrUpdateBlock --marker test --block-text "$TEXT" "$NONE" -)"
+    run -0 addOrUpdateBlock --marker test --block-text "$TEXT" "$NONE" - <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 $BLOCK

@@ -4,7 +4,7 @@ load temp
 
 @test "processing standard input works" {
     CONTENTS="# useless"
-    output="$(echo "$CONTENTS" | addOrAppendAssignment --lhs new --rhs add)"
+    run -0 addOrAppendAssignment --lhs new --rhs add <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 new="add"
@@ -13,7 +13,7 @@ EOF
 
 @test "nonexisting file and standard input works" {
     CONTENTS="# useless"
-    output="$(echo "$CONTENTS" | addOrAppendAssignment --lhs new --rhs add "$NONE" -)"
+    run -0 addOrAppendAssignment --lhs new --rhs add "$NONE" - <<<"$CONTENTS"
     assert_output - <<EOF
 $CONTENTS
 new="add"
