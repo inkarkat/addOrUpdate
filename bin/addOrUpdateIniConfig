@@ -49,8 +49,14 @@ do
 			;;
 	--add-@(before|after))
 			addOrUpdateAddBeforeAfterArgs+=("$1" "${2:?}"); shift; shift;;
+
+	--in-place|--in-place=*|-i*|--test-only|-t|--all|--ignore-nonexisting|--create-nonexisting)
+			addOrUpdateLineArgs+=("$1"); shift;;
+	--accept-match|-a|--post-line|--pre-update|--post-update)
+			addOrUpdateLineArgs+=("$1" "${2?}"); shift; shift;;
+
 	--)		addOrUpdateLineArgs+=("$1"); shift; break;;
-	*)		addOrUpdateLineArgs+=("$1"); shift;;
+	*)		break;;
     esac
 done
 if [ -z "${section+t}" -o -z "${key+t}" -o -z "${value+t}" ]; then
@@ -73,22 +79,47 @@ fi >&2
 literalKey="$(printf %s "$key" | sed -e 's/[][\$*.^]/\\&/g')"
 literalSection="$(printf %s "$section" | sed -e 's/[][\$*.^/]/\\&/g')"
 
-output="$(addOrUpdateLine \
-	--skip "0,/^\\[${literalSection}\\][[:space:]]*\$/" \
-	--no-skip "$;/^\\[${literalSection}\\][[:space:]]*\$/" \
-	--add-after '$' \
-	--add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
-	"${addOrUpdateAddBeforeAfterArgs[@]}" \
-	--line "${key}=${value}" --update-match "^${literalKey}=.*" \
-	"${addOrUpdatePreLineArgs[@]}" "${addOrUpdateLineArgs[@]}" "$@")"; status=$?
-case $status in
-    1)	exec addOrUpdateLine \
-		--pre-line '' \
-		--line "[${section}]" \
-		"${addOrUpdatePreAsPostLineArgs[@]}" \
-		--post-line "${key}=${value}" \
-		"${addOrUpdateLineArgs[@]}" "$@"
-	;;
-    *)	printf '%s\n' "$output"
-	exit $status;;
-esac
+addOrUpdateKeyValueInSection()
+{
+    addOrUpdateLine \
+	    --skip "0,/^\\[${literalSection}\\][[:space:]]*\$/" \
+	    --no-skip "$;/^\\[${literalSection}\\][[:space:]]*\$/" \
+	    --add-after '$' \
+	    --add-before '/^\(\[.*\]\)\?[[:space:]]*$/' \
+	    "${addOrUpdateAddBeforeAfterArgs[@]}" \
+	    --line "${key}=${value}" --update-match "^${literalKey}=.*" \
+	    "${addOrUpdatePreLineArgs[@]}" "${addOrUpdateLineArgs[@]}" "$@"
+}
+
+if [ $# -le 1 ]; then
+    # For a single FILE, assume that the SECTION is already there, and directly try
+    # to add or update the KEY=VALUE inside that SECTION. If that fails, we'll add
+    # both SECTION and its first KEY=VALUE in a second invocation.
+    output="$(addOrUpdateKeyValueInSection "$@")"; status=$?
+    case $status in
+	1)  exec addOrUpdateLine \
+		    --pre-line '' \
+		    --line "[${section}]" \
+		    "${addOrUpdatePreAsPostLineArgs[@]}" \
+		    --post-line "${key}=${value}" \
+		    "${addOrUpdateLineArgs[@]}" "$@"
+	    ;;
+	*)  printf '%s\n' "$output"
+	    exit $status;;
+    esac
+else
+    # When multiple FILEs are passed, we cannot use the first optimistic
+    # invocation's exit status in order to check whether the SECTION did in fact
+    # exist; depending on the --all flag, processing is different.
+    # Instead, always do the conservative two-step process of first ensuring that
+    # the SECTION is there, and then adding / updating the KEY=VALUE in there.
+    addOrUpdateLine \
+	    --pre-line '' \
+	    --line "[${section}]" \
+	    "${addOrUpdateLineArgs[@]}" "$@" \
+	    >/dev/null; status=$?
+    case $status in
+	2|3|4|5)    exit $status;;  # Don't try again for fatal errors.
+    esac
+    addOrUpdateKeyValueInSection "$@"
+fi
