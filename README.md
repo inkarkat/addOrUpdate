@@ -10,6 +10,7 @@ Text fragments can be single lines, or as a specialization `ASSIGNEE=VALUE` line
 
 * Bash, GNU `sed`
 * [inkarkat/memoizers](https://github.com/inkarkat/memoizers) for the `containedOr...` commands
+* [inkarkat/shell-tools](https://github.com/inkarkat/shell-tools) for the `addOrUpdateIniConfig` command
 * automated testing is done with _bats - Bash Automated Testing System_ (https://github.com/bats-core/bats-core)
 
 ### Installation
