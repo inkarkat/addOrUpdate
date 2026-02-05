@@ -1,5 +1,6 @@
 #!/bin/bash
 
 ADDORUPDATEINICONFIG_DESCRIPTION="If a configuration in the form KEY=... under section [SECTION] does not exist in\nat least one (all with --all) of the passed INI-FILE(s), asks the user whether\nto update it so that VALUE gets assigned (in the first file to match, and only\nthe first such matching config line there), or append (at the SECTION's end of\nthe last INI-FILE) if such config line does not exist yet." \
+ADDORUPDATEINICONFIG="${ADDORUPDATEINICONFIG:-$(basename "$0")}" \
 ADDORUPDATELINE=containedOrAddOrUpdateLine \
 exec addOrUpdateIniConfig "$@"
