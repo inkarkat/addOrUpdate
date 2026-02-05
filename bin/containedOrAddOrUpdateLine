@@ -86,7 +86,7 @@ do
 	--replacement|-r)	    addOrUpdateLineArgs+=("$1" "$2"); replacement="$2"; shift; shift;;
 	--ignore-nonexisting|--create-nonexisting)
 				    addOrUpdateLineArgs+=("$1"); shift;;
-	--accept-match|-a|--update-match|-u|--pre-line|--post-line|--pre-update|--post-update|--add-before|--add-after)
+	--accept-match|-a|--update-match|-u|--pre-line|--post-line|--pre-update|--post-update|--add-before|--add-after|--skip|--no-skip)
 				    addOrUpdateLineArgs+=("$1" "$2"); shift; shift;;
 	--)			    addOrUpdateLineArgs+=("$1"); shift; break;;
 	-)			    break;;
