@@ -9,8 +9,15 @@ load temp
     diff -y "$FILE3" "$MORE3"
 }
 
-@test "update all with updated assignment in second file updates that file" {
-    run -0 updateAssignment --all --in-place --lhs quux --rhs new "$FILE" "$FILE2" "$FILE3"
+@test "update all with existing assignment in first file keeps contents and returns 1" {
+    run -1 updateAssignment --all --in-place --lhs fox --rhs hi "$FILE" "$FILE2" "$FILE3"
+    diff -y "$FILE" "$INPUT"
+    diff -y "$FILE2" "$MORE2"
+    diff -y "$FILE3" "$MORE3"
+}
+
+@test "update all with updated assignment in second file updates that file and returns 1" {
+    run -1 updateAssignment --all --in-place --lhs quux --rhs new "$FILE" "$FILE2" "$FILE3"
     diff -y "$FILE" "$INPUT"
     diff -y - --label expected "$FILE2" <<'EOF'
 foo=bar

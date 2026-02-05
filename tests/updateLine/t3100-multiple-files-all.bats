@@ -24,9 +24,9 @@ foo=no bar baz
 EOF
 }
 
-@test "update all with match in second file updates that file" {
+@test "update all with match in second file updates that file and returns 1" {
     UPDATE='quux=updated'
-    run -0 updateLine --all --in-place --update-match "quux=.*" --replacement "$UPDATE" "$FILE" "$FILE2" "$FILE3"
+    run -1 updateLine --all --in-place --update-match "quux=.*" --replacement "$UPDATE" "$FILE" "$FILE2" "$FILE3"
     diff -y "$INPUT" "$FILE"
     diff -y - --label expected "$FILE2" <<EOF
 foo=bar
@@ -43,17 +43,17 @@ EOF
     diff -y "$FILE3" "$MORE3"
 }
 
-@test "update all with existing line in first file returns 99" {
+@test "update all with existing line in first file returns 1" {
     UPDATE='foo=hoo bar baz'
-    run -99 updateLine --all --in-place --update-match "$UPDATE" --replacement '&' "$FILE" "$FILE2" "$FILE3"
+    run -1 updateLine --all --in-place --update-match "$UPDATE" --replacement '&' "$FILE" "$FILE2" "$FILE3"
     diff -y "$FILE" "$INPUT"
     diff -y "$FILE2" "$MORE2"
     diff -y "$FILE3" "$MORE3"
 }
 
-@test "update all with existing line in one file returns 99" {
+@test "update all with existing line in one file returns 1" {
     UPDATE='foo=hoo bar baz'
-    run -99 updateLine --all --in-place --update-match "$UPDATE" --replacement '&' "$FILE2" "$FILE3" "$FILE"
+    run -1 updateLine --all --in-place --update-match "$UPDATE" --replacement '&' "$FILE2" "$FILE3" "$FILE"
     diff -y "$FILE" "$INPUT"
     diff -y "$FILE2" "$MORE2"
     diff -y "$FILE3" "$MORE3"
