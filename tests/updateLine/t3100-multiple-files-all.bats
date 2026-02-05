@@ -43,9 +43,9 @@ EOF
     diff -y "$FILE3" "$MORE3"
 }
 
-@test "update all with existing line in first file returns 1" {
+@test "update all with existing line in first file returns 99" {
     UPDATE='foo=hoo bar baz'
-    run -1 updateLine --all --in-place --update-match "$UPDATE" --replacement '&' "$FILE" "$FILE2" "$FILE3"
+    run -99 updateLine --all --in-place --update-match "$UPDATE" --replacement '&' "$FILE" "$FILE2" "$FILE3"
     diff -y "$FILE" "$INPUT"
     diff -y "$FILE2" "$MORE2"
     diff -y "$FILE3" "$MORE3"

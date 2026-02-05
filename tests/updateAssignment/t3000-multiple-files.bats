@@ -33,8 +33,8 @@ EOF
     diff -y "$FILE3" "$MORE3"
 }
 
-@test "update with existing assignment in first file returns 1" {
-    run -1 updateAssignment --in-place --lhs fox --rhs hi "$FILE" "$FILE2" "$FILE3"
+@test "update with existing assignment in first file returns 99" {
+    run -99 updateAssignment --in-place --lhs fox --rhs hi "$FILE" "$FILE2" "$FILE3"
     diff -y "$FILE" "$INPUT"
     diff -y "$FILE2" "$MORE2"
     diff -y "$FILE3" "$MORE3"

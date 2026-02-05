@@ -33,14 +33,11 @@ EOF
     diff -y "$FILE3" "$MORE3"
 }
 
-@test "update with existing assignment in first file appends at the end of the last file only" {
-    addOrUpdateAssignment --in-place --lhs fox --rhs hi "$FILE" "$FILE2" "$FILE3"
+@test "update with existing assignment in first file keeps contents and returns 99" {
+    run -99 addOrUpdateAssignment --in-place --lhs fox --rhs hi "$FILE" "$FILE2" "$FILE3"
     diff -y "$FILE" "$INPUT"
     diff -y "$FILE2" "$MORE2"
-    diff -y - --label expected "$FILE3" <<EOF
-$(cat "$MORE3")
-fox=hi
-EOF
+    diff -y "$FILE3" "$MORE3"
 }
 
 @test "update with nonexisting assignment appends at the end of the last file only" {

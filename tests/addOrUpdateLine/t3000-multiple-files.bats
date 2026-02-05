@@ -35,15 +35,12 @@ EOF
     diff -y "$FILE3" "$MORE3"
 }
 
-@test "update with existing line in first file appends at the end of the last file only" {
+@test "update with existing line in first file keeps contents and returns 99" {
     UPDATE='foo=hoo bar baz'
-    addOrUpdateLine --in-place --line "$UPDATE" "$FILE" "$FILE2" "$FILE3"
+    run -99 addOrUpdateLine --in-place --line "$UPDATE" "$FILE" "$FILE2" "$FILE3"
     diff -y "$FILE" "$INPUT"
     diff -y "$FILE2" "$MORE2"
-    diff -y - --label expected "$FILE3" <<EOF
-$(cat "$MORE3")
-$UPDATE
-EOF
+    diff -y "$FILE3" "$MORE3"
 }
 
 @test "update with nonexisting line appends at the end of the last file only" {
