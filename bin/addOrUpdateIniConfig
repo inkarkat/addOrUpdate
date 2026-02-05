@@ -134,7 +134,7 @@ fi
 
 if [ $# -eq 0 ]; then
     exec tempfile --quiet --basename addOrUpdateIniConfig --sink-exec "${BASH_SOURCE[0]}" "${allArgs[@]}" \;
-elif [ $# -eq 1 -a "$1" = - ] || [ -n "$stdinIndex" ]; then
+elif [ -n "$stdinIndex" ]; then
     typeset -a files=("$@")
     exec tempfile --quiet --basename addOrUpdateIniConfig --sink-exec "${BASH_SOURCE[0]}" \
 	    "${allArgs[@]:0:$((${#allArgs[@]} - $#))}" "${files[@]:0:stdinIndex}" {} "${files[@]:$((stdinIndex + 1))}" \;
