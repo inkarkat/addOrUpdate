@@ -1,0 +1,41 @@
+#!/usr/bin/env bats
+
+load temp
+
+@test "returns 99 and no output if implicit stdin already contains the line" {
+    INPUT="[default]
+foo=bar
+more=here"
+    export MEMOIZEDECISION_CHOICE=n
+    run -99 containedOrAddOrUpdateIniConfig --section default --key foo --value bar <<<"$INPUT"
+    assert_output -e " already contains 'foo=bar'; no update necessary\\.\$"
+}
+
+@test "returns 99 and no output if stdin as - already contains the line" {
+    INPUT="[default]
+foo=bar
+more=here"
+    export MEMOIZEDECISION_CHOICE=n
+    run -99 containedOrAddOrUpdateIniConfig --section default --key foo --value bar - <<<"$INPUT"
+    assert_output -e " already contains 'foo=bar'; no update necessary\\.\$"
+}
+
+@test "asks and returns 98 and no output if the update is declined by the user" {
+    INPUT="[default]
+foo=bar"
+    UPDATE="foo=new"
+    export MEMOIZEDECISION_CHOICE=n
+    run -98 containedOrAddOrUpdateIniConfig --section default --key foo --value new - <<<"$INPUT"
+    assert_output -p "does not yet contain '$UPDATE'. Shall I update it?"
+}
+
+@test "asks, appends, returns 0, and prints output if the update is accepted by the user" {
+    INPUT="[default]
+foo=bar"
+    UPDATE="foo=new"
+    export MEMOIZEDECISION_CHOICE=y
+    run -0 containedOrAddOrUpdateIniConfig --section default --key foo --value new - <<<"$INPUT"
+    assert_line -n 0 -p "does not yet contain '$UPDATE'. Shall I update it?"
+    assert_line -n 1 '[default]'
+    assert_line -n 2 "$UPDATE"
+}

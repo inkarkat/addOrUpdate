@@ -1,22 +1,25 @@
 #!/bin/bash
 shopt -qs extglob
 
+: ${ADDORUPDATEINICONFIG_DESCRIPTION:="Tries to locate a configuration in the form KEY=... under section [SECTION] in\\nat least one (all with --all) of the passed INI-FILE(s), and updates it so that\\nVALUE gets assigned (in the first file to match, and only the first such\\nmatching config line there), or appends (at the SECTION's end of the last\\nINI-FILE) if such config line does not exist yet."}
+: ${ADDORUPDATELINE:=addOrUpdateLine}
+
 typeset -a usageOverrideArgs=(
     -e '/^ *\(--line|-l\|--update-match|-u\|--replacement|-r\|--skip\|--no-skip\)/b removeOptionLoop'
-    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateLine /\1\2'"$(basename "$0")"' -s|--section SECTION -k|--key KEY -v|--value VALUE /; s/-l|--line config line \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] //; s/\[--skip ADDRESS \[--skip ...\] \[--no-skip ADDRESS \[--no-skip ...\]\]\]//; s/\[FILE \.\.\.\]/[INI-FILE ...]/ }'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*'"$ADDORUPDATELINE"' /\1\2'"$(basename "$0")"' -s|--section SECTION -k|--key KEY -v|--value VALUE /; s/-l|--line config line \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] //; s/\[--skip ADDRESS \[--skip ...\] \[--no-skip ADDRESS \[--no-skip ...\]\]\]//; s/\[FILE \.\.\.\]/[INI-FILE ...]/ }'
 )
 printUsage()
 {
-    addOrUpdateLine --doesNotExist 2>&1 | sed \
+    $ADDORUPDATELINE --doesNotExist 2>&1 | sed \
 	-e '/^ERROR: Unknown option "--doesNotExist"!/{ N; s/\n$//; D; }' \
 	"${usageOverrideArgs[@]}" \
-	-e "/Try addOrUpdateLine --help for more information./s/addOrUpdateLine/$(basename "$1")/" \
+	-e "/Try $ADDORUPDATELINE --help for more information./s/${ADDORUPDATELINE}/$(basename "$1")/" \
 	-e :removeOptionLoop
 }
 printLongUsage()
 {
-    addOrUpdateLine --help 2>&1 | sed \
-	-e '1s#^.*$#'"Tries to locate a configuration in the form KEY=... under section [SECTION] in\nat least one (all with --all) of the passed INI-FILE(s), and updates it so that\nVALUE gets assigned (in the first file to match, and only the first such\nmatching config line there), or appends (at the SECTION's end of the last\nINI-FILE) if such config line does not exist yet.#" \
+    $ADDORUPDATELINE --help 2>&1 | sed \
+	-e "1s#^.*\$#${ADDORUPDATEINICONFIG_DESCRIPTION}#" \
 	-e '2b removeFirstParagraphLoop' \
 	-e 's/LINE/config line/g' \
 	-e '/^ *--in-place/i\
@@ -24,7 +27,7 @@ printLongUsage()
     --key|-k KEY	    Locate the first line that has KEY=...\
     --value|-v VALUE	    Replace the original value after the = with VALUE.' \
 	"${usageOverrideArgs[@]}" \
-	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateLine .*/\1\2'"$(basename "$1") -s Settings -k gtk-application-prefer-dark-theme -v 0 ~\/.config\/gtk-3.0\/settings.ini/ }" \
+	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?'"$ADDORUPDATELINE"' .*/\1\2'"$(basename "$1") -s Settings -k gtk-application-prefer-dark-theme -v 0 ~\/.config\/gtk-3.0\/settings.ini/ }" \
 	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
 	-e b -e :removeOptionLoop -e '{ /\n *\(--line|-l\|--update-match|-u\|--replacement|-r\|--skip\|--no-skip\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
 }
@@ -62,6 +65,15 @@ do
 	--accept-match|-a|--post-line|--pre-update|--post-update)
 			addOrUpdateLineArgs+=("$1" "${2?}"); shift; shift;;
 
+	-+([y]))
+			addOrUpdateLineArgs+=("$1"); shift;;
+	--@(yes))
+			addOrUpdateLineArgs+=("$1"); shift;;
+	-[gnNM])
+			addOrUpdateLineArgs+=("$1" "${2?}"); shift; shift;;
+	--@(memoize-group|name|needs-update-message|up-to-date-message))
+			addOrUpdateLineArgs+=("$1" "${2?}"); shift; shift;;
+
 	--)		addOrUpdateLineArgs+=("$1"); shift; break;;
 	*)		break;;
     esac
@@ -88,7 +100,7 @@ literalSection="$(printf %s "$section" | sed -e 's/[][\$*.^/]/\\&/g')"
 
 addOrUpdateKeyValueInSection()
 {
-    addOrUpdateLine \
+    $ADDORUPDATELINE \
 	    --skip "0,/^\\[${literalSection}\\][[:space:]]*\$/" \
 	    --no-skip "$;/^\\[${literalSection}\\][[:space:]]*\$/" \
 	    --add-after '$' \
@@ -99,7 +111,7 @@ addOrUpdateKeyValueInSection()
 }
 addSectionKeyAndValue()
 {
-    addOrUpdateLine \
+    $ADDORUPDATELINE \
 	    --pre-line '' \
 	    --line "[${section}]" \
 	    "${addOrUpdatePreAsPostLineArgs[@]}" \
@@ -156,7 +168,7 @@ else
     # exist; depending on the --all flag, processing is different.
     # Instead, always do the conservative two-step process of first ensuring that
     # the SECTION is there, and then adding / updating the KEY=VALUE in there.
-    [ "$ADDORUPDATELINE_NO_APPEND" ] || addOrUpdateLine \
+    [ "$ADDORUPDATELINE_NO_APPEND" ] || $ADDORUPDATELINE \
 	    --pre-line '' \
 	    --line "[${section}]" \
 	    "${addOrUpdateLineArgs[@]}" "$@" \
