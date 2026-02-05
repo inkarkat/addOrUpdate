@@ -144,7 +144,9 @@ elif [ $# -eq 1 ]; then
     # both SECTION and its first KEY=VALUE in a second invocation.
     output="$(addOrUpdateKeyValueInSection "$@")"; status=$?
     case $status in
-	1)  addSectionKeyAndValue "$@";;
+	1)  [ "$ADDORUPDATELINE_NO_APPEND" ] && exit 1
+	    addSectionKeyAndValue "$@"
+	    ;;
 	*)  printf '%s\n' "$output"
 	    exit $status;;
     esac
@@ -154,7 +156,7 @@ else
     # exist; depending on the --all flag, processing is different.
     # Instead, always do the conservative two-step process of first ensuring that
     # the SECTION is there, and then adding / updating the KEY=VALUE in there.
-    addOrUpdateLine \
+    [ "$ADDORUPDATELINE_NO_APPEND" ] || addOrUpdateLine \
 	    --pre-line '' \
 	    --line "[${section}]" \
 	    "${addOrUpdateLineArgs[@]}" "$@" \
