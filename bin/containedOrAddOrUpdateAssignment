@@ -1,53 +1,5 @@
 #!/bin/bash
 
-typeset -a usageOverrideArgs=(
-    -e '/^ *--line|-l\|--update-match|-u\|--replacement|-r/b removeOptionLoop'
-    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*containedOrAddOrUpdateLine /\1\2'"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\]// }'
-)
-printUsage()
-{
-    containedOrAddOrUpdateLine --doesNotExist 2>&1 | sed \
-	-e '/^ERROR: Unknown option "--doesNotExist"!/{ N; s/\n$//; D; }' \
-	"${usageOverrideArgs[@]}" \
-	-e "/Try containedOrAddOrUpdateLine --help for more information./s/containedOrAddOrUpdateLine/$(basename "$1")/" \
-	-e :removeOptionLoop
-}
-printLongUsage()
-{
-    containedOrAddOrUpdateLine --help 2>&1 | sed \
-	-e '1s#^.*$#If an assignment in the form ASSIGNEE=... does not exist in at least one (all with --all) of the passed FILE(s), asks the user whether to update it so that VALUE gets assigned (in the first file to match, and only the first such matching assignment there), or append (at the end of the last FILE).#' \
-	-e '2b removeFirstParagraphLoop' \
-	-e 's/LINE/assignment/g' \
-	"${usageOverrideArgs[@]}" \
-	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?containedOrAddOrUpdateLine .*/\1\2'"$(basename "$1") -l 'export FOO' -r quux .bashrc/ }" \
-	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
-	-e b -e :removeOptionLoop -e '{ /\n *\(--line|-l\|--update-match|-u\|--replacement|-r\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
-}
-
-unset lhs
-unset rhs
-typeset -a addOrUpdateLineArgs=()
-while [ $# -ne 0 ]
-do
-    case "$1" in
-	--help|-h|-\?)	shift; printLongUsage "$0"; exit 0;;
-	--lhs|-l)	shift; lhs="$1"; shift;;
-	--rhs|-r)	shift; rhs="$1"; shift;;
-	--)		addOrUpdateLineArgs+=("$1"); shift; break;;
-	*)		addOrUpdateLineArgs+=("$1"); shift;;
-    esac
-done
-if [ -z "${lhs+t}" -o -z "${rhs+t}" ]; then
-    echo 'ERROR: Both -l|--lhs ASSIGNEE and -r|--rhs VALUE must be passed.'
-    echo
-    printUsage "$0"
-    exit 2
-elif [ -z "$lhs" ]; then
-    echo 'ERROR: ASSIGNEE cannot be empty.'
-    echo
-    printUsage "$0"
-    exit 2
-fi >&2
-
-literalLhs="$(printf %s "$lhs" | sed -e 's/[][\$*.^]/\\&/g')"
-exec containedOrAddOrUpdateLine --line "${lhs}=${rhs}" --update-match "^${literalLhs}=.*" "${addOrUpdateLineArgs[@]}" "$@"
+ADDORUPDATEASSIGNMENT_DESCRIPTION='If an assignment in the form ASSIGNEE=... does not exist in at least one (all\nwith --all) of the passed FILE(s), asks the user whether to update it so that\nVALUE gets assigned (in the first file to match, and only the first such\nmatching assignment there), or append (at the end of the last FILE).' \
+ADDORUPDATELINE=containedOrAddOrUpdateLine \
+exec addOrUpdateAssignment "$@"

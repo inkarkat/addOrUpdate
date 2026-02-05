@@ -1,28 +1,31 @@
 #!/bin/bash
 
+: ${ADDORUPDATEASSIGNMENT_DESCRIPTION:='Tries to locate an assignment in the form ASSIGNEE=... in at least one (all with\n--all) of the passed FILE(s), and updates it so that VALUE gets assigned (in the\nfirst file to match, and only the first such matching assignment there), or\nappends (at the end of the last FILE) if such assignment does not exist yet.'}
+: ${ADDORUPDATELINE:=addOrUpdateLine}
+
 typeset -a usageOverrideArgs=(
     -e '/^ *\(--line|-l\|--update-match|-u\|--replacement|-r\)/b removeOptionLoop'
-    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateLine /\1\2'"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] // }'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*'"$ADDORUPDATELINE"' /\1\2'"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] // }'
 )
 printUsage()
 {
-    addOrUpdateLine --doesNotExist 2>&1 | sed \
+    $ADDORUPDATELINE --doesNotExist 2>&1 | sed \
 	-e '/^ERROR: Unknown option "--doesNotExist"!/{ N; s/\n$//; D; }' \
 	"${usageOverrideArgs[@]}" \
-	-e "/Try addOrUpdateLine --help for more information./s/addOrUpdateLine/$(basename "$1")/" \
+	-e "/Try $ADDORUPDATELINE --help for more information./s/${ADDORUPDATELINE}/$(basename "$1")/" \
 	-e :removeOptionLoop
 }
 printLongUsage()
 {
-    addOrUpdateLine --help 2>&1 | sed \
-	-e '1s#^.*$#Tries to locate an assignment in the form ASSIGNEE=... in at least one (all with\n--all) of the passed FILE(s), and updates it so that VALUE gets assigned (in the\nfirst file to match, and only the first such matching assignment there), or\nappends (at the end of the last FILE) if such assignment does not exist yet.#' \
+    $ADDORUPDATELINE --help 2>&1 | sed \
+	-e "1s#^.*\$#${ADDORUPDATEASSIGNMENT_DESCRIPTION}#" \
 	-e '2b removeFirstParagraphLoop' \
 	-e 's/LINE/assignment/g' \
 	-e '/^ *--in-place/i\
     --lhs|-l ASSIGNEE	    Locate the first line that has ASSIGNEE=...\
     --rhs|-r VALUE	    Replace the original value after the = with VALUE.' \
 	"${usageOverrideArgs[@]}" \
-	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?addOrUpdateLine .*/\1\2'"$(basename "$1") -l 'export PAGER' -r less .bashrc/ }" \
+	-e '/^Example:$/N' -e '/\(^\|\n\)Example: */{ s/\(^\|\n\)\(Example: *\)\?'"$ADDORUPDATELINE"' .*/\1\2'"$(basename "$1") -l 'export PAGER' -r less .bashrc/ }" \
 	-e b -e :removeFirstParagraphLoop -e '{ /\(^\|\n\)$/{ s/^\(.*\n\)\?//; b; }; N; b removeFirstParagraphLoop }' \
 	-e b -e :removeOptionLoop -e '{ /\n *\(--line|-l\|--update-match|-u\|--replacement|-r\)[^\n]*$/{ N; b removeOptionLoop; }; /\n *--[^\n]*$\|\n[^	 ]\|\n$/{ s/^\(.*\n\)\?//; b; }; N; b removeOptionLoop }'
 }
@@ -53,4 +56,4 @@ elif [ -z "$lhs" ]; then
 fi >&2
 
 literalLhs="$(printf %s "$lhs" | sed -e 's/[][\$*.^]/\\&/g')"
-exec addOrUpdateLine --line "${lhs}=${rhs}" --update-match "^${literalLhs}=.*" "${addOrUpdateLineArgs[@]}" "$@"
+exec $ADDORUPDATELINE --line "${lhs}=${rhs}" --update-match "^${literalLhs}=.*" "${addOrUpdateLineArgs[@]}" "$@"
