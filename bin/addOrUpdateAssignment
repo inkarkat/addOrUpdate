@@ -2,10 +2,11 @@
 
 : ${ADDORUPDATEASSIGNMENT_DESCRIPTION:='Tries to locate an assignment in the form ASSIGNEE=... in at least one (all with\n--all) of the passed FILE(s), and updates it so that VALUE gets assigned (in the\nfirst file to match, and only the first such matching assignment there), or\nappends (at the end of the last FILE) if such assignment does not exist yet.'}
 : ${ADDORUPDATELINE:=addOrUpdateLine}
+: ${ASSIGNMENT_OPERATOR:='='}
 
 typeset -a usageOverrideArgs=(
     -e '/^ *\(--line|-l\|--update-match|-u\|--replacement|-r\)/b removeOptionLoop'
-    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*'"$ADDORUPDATELINE"' /\1\2'"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] // }'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*'"$ADDORUPDATELINE"' /\1\2[ASSIGNMENT_OPERATOR="="] '"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/-l|--line assignment \[-a|--accept-match ACCEPT-PATTERN\] \[-u|--update-match PATTERN\] \[-r|--replacement REPLACEMENT\] // }'
 )
 printUsage()
 {
@@ -55,5 +56,5 @@ elif [ -z "$lhs" ]; then
     exit 2
 fi >&2
 
-literalLhs="$(printf %s "$lhs" | sed -e 's/[][\$*.^]/\\&/g')"
-exec $ADDORUPDATELINE --line "${lhs}=${rhs}" --update-match "^${literalLhs}=.*" "${addOrUpdateLineArgs[@]}" "$@"
+literalLhsAndOp="$(printf %s "${lhs}${ASSIGNMENT_OPERATOR}" | sed -e 's/[][\$*.^]/\\&/g')"
+exec $ADDORUPDATELINE --line "${lhs}${ASSIGNMENT_OPERATOR}${rhs}" --update-match "^${literalLhsAndOp}.*" "${addOrUpdateLineArgs[@]}" "$@"
