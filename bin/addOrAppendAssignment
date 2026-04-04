@@ -1,10 +1,12 @@
 #!/bin/bash
 
+: ${ASSIGNMENT_OPERATOR:='='}
+# ASSIGNMENT_OPERATOR_PATTERN
 : ${ASSIGNMENT_QUOTE=\"}
 : ${ASSIGNMENT_SEPARATOR=' '}
 
 typeset -a usageOverrideArgs=(
-    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateWithSed /\1\2ASSIGNMENT_QUOTE=\\" ASSIGNMENT_SEPARATOR=" " '"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/ SED-ARGS \[--last-file SED-PROGRAM-ARG \[...\]\] \[\.\.\.\] / /; s/--create-nonexisting\]/& [--add-before|--add-after ADDRESS]/ }'
+    -e '/^Usage:$/N' -e '/\(^\|\n\)Usage: */{ s/\(^\|\n\)\(Usage: *\)\?\([^ ]\+ \)*addOrUpdateWithSed /\1\2[ASSIGNMENT_OPERATOR="=" [ASSIGNMENT_OPERATOR_PATTERN="[[:space:]]*=[[:space:]]*"]] [ASSIGNMENT_QUOTE=\\"] [ASSIGNMENT_SEPARATOR=" "] '"$(basename "$0")"' -l|--lhs ASSIGNEE -r|--rhs VALUE /; s/ SED-ARGS \[--last-file SED-PROGRAM-ARG \[...\]\] \[\.\.\.\] / /; s/--create-nonexisting\]/& [--add-before|--add-after ADDRESS]/ }'
 )
 printUsage()
 {
@@ -74,6 +76,7 @@ elif [ -n "$addBeforeAddress" -a -n "$addAfterAddress" ]; then
 fi >&2
 
 literalLhs="$(printf %s "$lhs" | sed -e 's/[][\$*.^]/\\&/g')"
+literalOp="${ASSIGNMENT_OPERATOR_PATTERN:-$(printf %s "$ASSIGNMENT_OPERATOR" | sed -e 's/[][\$*.^]/\\&/g')}"
 literalRhs="$rhs"
 literalRhs="${literalRhs//\\/\\\\}"
 literalRhs="${literalRhs//&/\\&}"
@@ -89,11 +92,11 @@ literalQuote="${literalQuote//&/\\&}"
 
 typeset -a sedProgramStart=(
     -e "{ x; /./{ x; b slurpToEnd }; x }"
-    -e "/^${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\(.*${literalSeparatorPattern//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${literalSeparatorPattern//\//\\/}.*\\)\\?${literalQuotePattern//\//\\/}\$/{ b slurpToEndAndNoop }"
+    -e "/^${literalLhs//\//\\/}${literalOp//\//\\/}${literalQuotePattern//\//\\/}\\(.*${literalSeparatorPattern//\//\\/}\\)\\?${literalRhs//\//\\/}\\(${literalSeparatorPattern//\//\\/}.*\\)\\?${literalQuotePattern//\//\\/}\$/{ b slurpToEndAndNoop }"
 
-    -e "s/^\\(${literalLhs//\//\\/}=\\)\$/\\1${literalQuote//\//\\/}${literalRhs//\//\\/}${literalQuote//\//\\/}/; t slurpToEnd"
-    -e "s/^\\(${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalRhs//\//\\/}\\2/; t slurpToEnd"
-    -e "s/^\\(${literalLhs//\//\\/}=${literalQuotePattern//\//\\/}.*\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalSeparator//\//\\/}${literalRhs//\//\\/}\\2/; t slurpToEnd"
+    -e "s/^\\(${literalLhs//\//\\/}${literalOp//\//\\/}\\)\$/\\1${literalQuote//\//\\/}${literalRhs//\//\\/}${literalQuote//\//\\/}/; t slurpToEnd"
+    -e "s/^\\(${literalLhs//\//\\/}${literalOp//\//\\/}${literalQuotePattern//\//\\/}\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalRhs//\//\\/}\\2/; t slurpToEnd"
+    -e "s/^\\(${literalLhs//\//\\/}${literalOp//\//\\/}${literalQuotePattern//\//\\/}.*\\)\\(${literalQuotePattern//\//\\/}\\)\$/\\1${literalSeparator//\//\\/}${literalRhs//\//\\/}\\2/; t slurpToEnd"
     -e ':last'
 )
 typeset -a sedProgramLastFile=()
@@ -116,7 +119,7 @@ typeset -a sedProgramEnd=(
 
 if [ ! "$ADDORAPPENDASSIGNMENT_NO_APPEND" ]; then
     readonly NL=$'\n'
-    line="${lhs}=${ASSIGNMENT_QUOTE}${rhs}${ASSIGNMENT_QUOTE}"
+    line="${lhs}${ASSIGNMENT_OPERATOR}${ASSIGNMENT_QUOTE}${rhs}${ASSIGNMENT_QUOTE}"
     insertableLine="${line//\\/\\\\}"
     insertableLine="${insertableLine//${NL}/\\${NL}}"
     literalLine="$line"
