@@ -128,7 +128,7 @@ process()
 	typeset -a sedArgs=("${sedLastFileProgram[@]}") || \
 	typeset -a sedArgs=("${sedProgram[@]}")
 
-VERBOSE_IFS=newline ${DEBUG:+verbose --on-debug addOrUpdateWithSed} \
+VERBOSE_IFS=newline ${DEBUG:+verbose --on-debug --for addOrUpdateWithSed} \
     sed "${sedInplaceArgs[@]}" \
 	"${sedArgs[@]}" \
 	-- "$filespec"
