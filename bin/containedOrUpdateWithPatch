@@ -115,7 +115,7 @@ if [ "$1" = '-' ]; then # Note: This doesn't handle a later - argument, but mixi
     {
 	rm -f "$TMPFILE" 2>/dev/null
     }
-    [ "${DEBUG:-}" ] || trap 'cleanup' EXIT
+    ! ${DEBUG:+debugenabled --invert-match --} ${DEBUG:-:} || trap 'cleanup' EXIT
     cp /dev/stdin "$TMPFILE" || exit $?
     shift
     set -- "$TMPFILE" "$@"

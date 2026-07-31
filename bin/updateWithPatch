@@ -217,6 +217,4 @@ printAffectedFiles()
     return $overallStatus
 }
 
-case ",${DEBUG:-}," in *,updateWithPatch,*) set -x;; esac
-case ",${DEBUG:-}," in *,updateWithPatch\&[0-9],*) BASH_XTRACEFD="${DEBUG##updateWithPatch&}"; BASH_XTRACEFD="${BASH_XTRACEFD[0]}"; set -x;; esac
 $action "$@"
