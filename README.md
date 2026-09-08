@@ -12,7 +12,7 @@ Text fragments can be single lines, or as a specialization `ASSIGNEE=VALUE` line
 * [inkarkat/memoizers](https://github.com/inkarkat/memoizers) for the `containedOr...` commands
 * [inkarkat/shell-tools](https://github.com/inkarkat/shell-tools) for the `addOrUpdateIniConfig` command
 * [inkarkat/shell-debugging](https://github.com/inkarkat/shell-debugging) for debugging (optional)
-* automated testing is done with _bats - Bash Automated Testing System_ (https://github.com/bats-core/bats-core)
+* automated testing is done with _Bats_ - [Bash Automated Testing System](https://github.com/bats-core/bats-core)
 
 ### Installation
 
