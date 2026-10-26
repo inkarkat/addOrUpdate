@@ -111,7 +111,7 @@ done
 # Copy stdin into temporary file, as we may need to iterate over it.
 if [ "$1" = '-' ]; then # Note: This doesn't handle a later - argument, but mixing files and stdin is rare.
     TMPFILE="$(mktemp --tmpdir "$(basename -- "$0")-XXXXXX" 2>/dev/null || echo "${TMPDIR:-/tmp}/$(basename -- "$0").$$$RANDOM")"
-    trap '${DEBUG:+debugcommand --} rm -f -- "$TMPFILE" 2>/dev/null' EXIT
+    trap '${DEBUG:+debugcommand --module cleanup --} rm -f -- "$TMPFILE" 2>/dev/null' EXIT
     cp /dev/stdin "$TMPFILE" || exit $?
     shift
     set -- "$TMPFILE" "$@"
