@@ -1,6 +1,8 @@
 #!/bin/bash
 shopt -qs extglob
 
+${DEBUG:+eval $(debugtrace -o $- -- "$@")}
+
 printShortUsage()
 {
     # Note: short followed by long option; if the user knows the short one, she can
@@ -144,6 +146,8 @@ if [ $# -gt 1 ]; then
 else
     action="apply it"
 fi
+
+${DEBUG:+eval $(debugtrace --point main -o $- --)}
 
 # Note: Omit updateWithPatchInplaceArg here, as that would conflict with
 # --test-only.
